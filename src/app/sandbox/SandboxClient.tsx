@@ -103,8 +103,8 @@ export default function SandboxClient() {
         </h1>
         <p>
           Pick a real agent scenario below, hit Run, and watch the same human-in-the-loop request play out two
-          ways at once — hand-rolled with a raw <code className="mono">interrupt()</code> on the left, HGateway
-          on the right.
+          ways at once — hand-rolled with a raw <code className="mono">interrupt()</code> on the left, handed to{" "}
+          <b>Ved</b>, the HGateway agent, on the right.
         </p>
       </div>
 

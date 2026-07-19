@@ -129,8 +129,8 @@ workflow.add_node("finance_approval_node", finance_approval_node)
       },
       hgateway: {
         builder: [
-          ["Auto-forwards on timeout", "TTL + auto-forward to #finance-ops handles stale HITLs automatically."],
-          ["No single point of failure", "Rishabh isn't a single point of failure — it escalates if he's unavailable."],
+          ["Never goes stale", "Ved holds this instead of Rishabh — it doesn't just sit there if he's slow to respond."],
+          ["Rishabh isn't a dead end", "Ved keeps this moving even if Rishabh's unavailable — it's not stuck on one person."],
           ["Forward to Sneha, no code", "Forward re-routes to Sneha on the fly, no graph changes needed."],
           ["Reasoning logged automatically", "Every decision is captured with reasoning in the audit trail."],
         ],
@@ -245,7 +245,7 @@ workflow.add_node("ticket_routing_node", ticket_routing_node)
       },
       hgateway: {
         builder: [
-          ["Auto-forward prevents drift", "TTL + auto-forward to #support-escalations prevents unrouted tickets."],
+          ["Never sits unrouted", "Ved owns this ticket until it's routed — it doesn't drift because Rishabh missed a reply."],
           ["Structured options, no typos", "Structured options mean routing can never silently misfire."],
           ["Forward to Sneha instantly", "Forward re-routes to Sneha without touching the graph."],
           ["Routing + reasoning logged", "Routing decision + reasoning is logged automatically."],
@@ -253,7 +253,7 @@ workflow.add_node("ticket_routing_node", ticket_routing_node)
         responder: [
           ["Each option explains itself", "Each option shows why it might apply — no guessing."],
           ["One-click forward to Sneha", "Forward to Sneha in one click if she's the better owner."],
-          ["Auto-forwards after 2h", "Auto-forwards after 2h if I don't act — nothing's dropped."],
+          ["Nothing gets dropped", "Ved keeps this alive even if I don't act right away — nothing falls through."],
         ],
       },
     },
@@ -362,7 +362,7 @@ workflow.add_node("contract_context_node", contract_context_node)
       },
       hgateway: {
         builder: [
-          ["Auto-forward keeps deals moving", "TTL + auto-forward to #sales-ops keeps deals from stalling."],
+          ["Deals don't stall", "Ved keeps this moving instead of letting it stall on one person's inbox."],
           ["Validated fields, no corruption", "Structured fields are validated on submit — no corrupted data."],
           ["Forward to Sneha in one click", "Forward to Sneha in one click if she owns the account."],
           ["Every field logged with source", "Every submitted field is logged with who supplied it."],
@@ -473,7 +473,7 @@ workflow.add_node("social_copy_node", social_copy_node)
       },
       hgateway: {
         builder: [
-          ["Auto-forward if unavailable", "TTL + auto-forward to #marketing if Rishabh's unavailable."],
+          ["Doesn't wait on one person", "Ved keeps this moving if Rishabh's unavailable — the post isn't stuck waiting."],
           ["Edits captured as a diff", "Edits are captured as a diff against the original draft."],
           ["Forward to Sneha, 2nd pass", "Forward to Sneha in one click for a second pass."],
           ["Full edit history logged", "Full history of every edit and who made it."],

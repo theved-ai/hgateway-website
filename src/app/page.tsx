@@ -22,7 +22,7 @@ const ibmPlexMono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "HGateway — Human-in-the-loop for LangGraph agents",
+  title: "Ved — the HGateway agent that owns your agents' HITLs",
 };
 
 export default function Home() {

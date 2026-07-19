@@ -1,15 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import "./landing.css";
 import SiteNav from "../_shared/SiteNav";
 import { DOCS_URL, DASHBOARD_URL } from "../_shared/externalLinks";
-import { ROUTE_SANDBOX } from "../_shared/constants/routes";
 import MiniCodePanel from "./MiniCodePanel";
-import PainChipPanel from "./PainChipPanel";
 import InviteModal from "./InviteModal";
-import { PAINS, HERO_DIFF_CODE_HTML, INTEGRATION_CODE_HTML } from "./data";
+import { INTEGRATION_DIFF_HTML } from "./data";
 
 // Generic scroll-reveal: observes every element registered via `register`
 // (keyed by a stable string id, not the DOM node itself, so membership can
@@ -62,73 +59,280 @@ export default function LandingPage() {
 
       <section className="hero">
         <div className="hero-inner">
-          <div>
-            <div className="hero-kicker">
-              <span className="dot" /> HRRM for Agents
-            </div>
-            <h1 className="serif">
-              The infrastructure layer for
-              <br />
-              <em>agent-human interaction.</em>
-            </h1>
-            <p className="lede">
-              One HITL gateway that owns every human-in-the-loop request your agents raise — across nodes, across
-              agents.
-            </p>
-            <div className="hero-ctas">
-              <Link className="btn btn-primary" href={ROUTE_SANDBOX}>
-                Try the sandbox →
-              </Link>
-              <button
-                type="button"
-                className="btn btn-highlight invite-trigger"
-                onClick={() => setIsInviteOpen(true)}
-              >
-                Request invite<span className="seal">✓</span>
-              </button>
-            </div>
-            <div className="hero-trust">
-              <div className="stack">
-                <span>💰</span>
-                <span>🎧</span>
-                <span>📄</span>
-                <span>📣</span>
-              </div>
-              4 HITL types, one SDK — approval, decision, context, review/edit
-            </div>
+          <div className="hero-kicker">
+            <span className="dot" /> HRRM for Agents
+          </div>
+          <h1 className="serif">
+            Ved makes your agent <span className="rq-arrow">↔</span> human
+            <br />
+            interaction, <em>Agentic.</em>
+          </h1>
+          <p className="lede">
+            Ved is an HGateway (HITL gateway) agent — it owns and resolves every HITL your agents raise. Register the
+            interrupt, hand it to Ved, and your agent goes back to doing the one thing it&apos;s actually coded for:{" "}
+            <b>its business logic</b>, not babysitting a raised HITL through to resolution.
+          </p>
+
+          <div className="hero-ctas">
+            <button
+              type="button"
+              className="btn btn-highlight invite-trigger"
+              onClick={() => setIsInviteOpen(true)}
+            >
+              <span className="shine" />
+              Request invite<span className="seal">✓</span>
+            </button>
+            <a className="btn btn-ghost" href="#axiom">
+              See the argument ↓
+            </a>
           </div>
 
-          <div className="hero-code-wrap">
-            <MiniCodePanel title="hitl_node.py — diff" codeHtml={HERO_DIFF_CODE_HTML} />
-            <div className="hero-code-caption">
-              <span className="badge">DIFF</span> one decorator, one swapped call — that&apos;s the whole migration.
+          <div className="lifecycle-block">
+            <div className="lifecycle-example">
+              A HITL like <span className="lx-quote">&quot;approve this $10k refund&quot;</span> has its own
+              lifecycle.
+            </div>
+            <div className="lifecycle-track">
+              <div className="lc-flow-dot" />
+              <div className="lc-step owned">
+                <div className="lc-connector" />
+                <div className="lc-num">1</div>
+                <div className="lc-label">Raised</div>
+                <div className="lc-sub">the agent flags: &quot;refund is $10k, over my limit&quot;</div>
+              </div>
+              <div className="lc-step owned">
+                <div className="lc-connector" />
+                <div className="lc-num">2</div>
+                <div className="lc-label">Delivered</div>
+                <div className="lc-sub">the finance approver on call gets it, with context</div>
+              </div>
+              <div className="lc-step owned">
+                <div className="lc-connector" />
+                <div className="lc-num">3</div>
+                <div className="lc-label">Interaction</div>
+                <div className="lc-sub">approver asks for the refund history before deciding</div>
+              </div>
+              <div className="lc-step owned">
+                <div className="lc-connector" />
+                <div className="lc-num">4</div>
+                <div className="lc-label">Resolved</div>
+                <div className="lc-sub">approved — with the reasoning attached</div>
+              </div>
+              <div className="lc-step owned">
+                <div className="lc-num">5</div>
+                <div className="lc-label">Resumed</div>
+                <div className="lc-sub">agent processes the refund, decision in hand</div>
+              </div>
+            </div>
+            <div className="lifecycle-branch-row">
+              <div className="lifecycle-branch-connector" />
+              <div className="lifecycle-branch">
+                <div className="lb-num">6</div>
+                <div className="lb-text">
+                  <b>Post-Resolution</b> — runs in parallel, independent of the main flow: the reasoning behind the
+                  decision feeds Ved&apos;s reasoning-capture stack, sharpening every future HITL.
+                </div>
+              </div>
+            </div>
+            <div className="lifecycle-owner">
+              <span className="led on" /> Ved owns this lifecycle end to end —{" "}
+              <b>your agent just resumes with its resolution.</b>
             </div>
           </div>
         </div>
       </section>
 
-      <section ref={register("problem")} className={`problem wrap reveal${isIn("problem") ? " in" : ""}`} id="problem">
-        <div className="sec-head center" style={{ marginLeft: "auto", marginRight: "auto", maxWidth: 720 }}>
-          <div className="sec-kicker" style={{ textAlign: "center" }}>
-            The problem
+      <section ref={register("axiom")} className={`axiom wrap reveal${isIn("axiom") ? " in" : ""}`} id="axiom">
+        <div className="axiom-plaque">
+          <div className="axiom-tag">
+            <span className="led on" /> The permanent constraint
           </div>
-          <h2>
-            Agents can act on their own — <em>until a human has to weigh in.</em>
+          <h2 className="serif">
+            No matter how mature agentic automation gets, <em>a human gate stays in place</em> — to govern its work,
+            to surveil its decisions, to intervene when it matters.
           </h2>
-          <p style={{ margin: "0 auto" }}>
-            That hand-off is hand-rolled today: a raw <code className="mono">interrupt()</code>, a bespoke Slack
-            message, no owner if the reply never comes. Click a chip to see the pain, in their own words.
+          <p>
+            That&apos;s not a gap left to close as agents get smarter. <b>It&apos;s a constraint to design for.</b>{" "}
+            Ved doesn&apos;t remove that gate — it owns how it&apos;s executed, so the question stops being
+            &quot;how do we remove the human&quot; and becomes &quot;who&apos;s actually running this checkpoint.&quot;
+          </p>
+        </div>
+      </section>
+
+      <section
+        ref={register("architecture")}
+        className={`architecture wrap reveal${isIn("architecture") ? " in" : ""}`}
+      >
+        <div className="sec-head">
+          <div className="sec-kicker">How the gate is executed today</div>
+          <h2>
+            Welded into the agent. <em>That&apos;s the whole problem.</em>
+          </h2>
+          <p>
+            Today&apos;s gate is a raw <code className="mono">interrupt()</code> and a one-off, hand-written message,
+            coded once inside a single agent. It works — until it needs an on-the-fly change, has to survive a stale
+            response, or needs to be more than a dead-end prompt with no way to interact back.
           </p>
         </div>
 
-        <div className="problem-cols">
-          <PainChipPanel who="Shubham" avatarLetter="S" role="builder" items={PAINS.builder} />
-          <PainChipPanel who="Rishabh" avatarLetter="R" role="responder" items={PAINS.responder} />
-        </div>
+        <div className="arch-grid">
+          <div className="arch-panel coupled">
+            <div className="arch-panel-label">
+              <span className="ap-tag bad">Welded in</span>
+            </div>
+            <h3>Coupled</h3>
+            <div className="arch-diagram">
+              <svg className="arch-svg" viewBox="0 0 300 200">
+                <path
+                  d="M84,26 C140,26 160,60 206,88"
+                  fill="none"
+                  stroke="#a8402a"
+                  strokeWidth="1.6"
+                  strokeDasharray="5 4"
+                  opacity=".7"
+                />
+                <path
+                  d="M84,100 C140,100 160,100 206,100"
+                  fill="none"
+                  stroke="#a8402a"
+                  strokeWidth="1.6"
+                  strokeDasharray="5 4"
+                  opacity=".7"
+                />
+                <path
+                  d="M84,174 C140,174 160,140 206,112"
+                  fill="none"
+                  stroke="#a8402a"
+                  strokeWidth="1.6"
+                  strokeDasharray="5 4"
+                  opacity=".7"
+                />
+              </svg>
+              <div className="arch-node agent" style={{ left: 0, top: 8 }}>
+                Agent A
+              </div>
+              <div className="arch-node agent" style={{ left: 0, top: 82 }}>
+                Agent B
+              </div>
+              <div className="arch-node agent" style={{ left: 0, top: 156 }}>
+                Agent C
+              </div>
+              <div className="arch-node bot-tag" style={{ left: 90, top: 30 }}>
+                HITL A
+              </div>
+              <div className="arch-node bot-tag" style={{ left: 90, top: 88 }}>
+                HITL B
+              </div>
+              <div className="arch-node bot-tag" style={{ left: 90, top: 138 }}>
+                HITL C
+              </div>
+              <div className="arch-node hub human" style={{ left: 210, top: 78 }}>
+                Human
+              </div>
+            </div>
+            <div className="arch-caption">
+              <b>Every agent executes its own HITL, its own way.</b> No shared lifecycle, no shared owner — so
+              nothing about it can be governed or improved.
+            </div>
+          </div>
 
-        <div className="problem-note">
-          Every one of these is the same problem wearing a different costume:{" "}
-          <b>the human step has no infrastructure of its own.</b>
+          <div className="arch-panel decoupled">
+            <div className="arch-panel-label">
+              <span className="ap-tag good">HGateway</span>
+            </div>
+            <h3>
+              <em>Decoupled</em>
+            </h3>
+            <div className="arch-diagram">
+              <svg className="arch-svg" viewBox="0 0 300 200">
+                <path d="M84,26 C120,26 122,92 112,100" fill="none" stroke="#0c8f44" strokeWidth="1.8" />
+                <path d="M84,100 L112,100" fill="none" stroke="#0c8f44" strokeWidth="1.8" />
+                <path d="M84,174 C120,174 122,108 112,100" fill="none" stroke="#0c8f44" strokeWidth="1.8" />
+                <path d="M202,100 L224,100" fill="none" stroke="#0c8f44" strokeWidth="1.8" />
+              </svg>
+              <div className="arch-node agent" style={{ left: 0, top: 8 }}>
+                Agent A
+              </div>
+              <div className="arch-node agent" style={{ left: 0, top: 82 }}>
+                Agent B
+              </div>
+              <div className="arch-node agent" style={{ left: 0, top: 156 }}>
+                Agent C
+              </div>
+              <div className="arch-node hub gateway" style={{ left: 112, top: 74 }}>
+                Ved
+              </div>
+              <div className="arch-node hub human" style={{ left: 224, top: 78 }}>
+                Human
+              </div>
+            </div>
+            <div className="arch-caption">
+              <b>Every agent hands its HITL to Ved.</b> One lifecycle, one owner — governed, learned from, and
+              trusted across every agent you run.
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section ref={register("cost")} className={`cost-section wrap reveal${isIn("cost") ? " in" : ""}`}>
+        <div className="sec-head">
+          <div className="sec-kicker">What welding it in costs you</div>
+          <h2>
+            Not a bug. <em>A ceiling.</em>
+          </h2>
+          <p>
+            None of this shows up in a demo. It shows up the first time you try to change, audit, or trust how your
+            agents hand off to people.
+          </p>
+        </div>
+        <div className="cost-list">
+          <div className="cost-item">
+            <span className="ci-ic">✕</span>
+            <div>
+              <h4>It can&apos;t be governed</h4>
+              <p>There&apos;s no single place to see how, or how well, every agent&apos;s human hand-off actually behaves.</p>
+            </div>
+          </div>
+          <div className="cost-item">
+            <span className="ci-ic">✕</span>
+            <div>
+              <h4>It can&apos;t change without a redeploy</h4>
+              <p>
+                Who gets asked, and how, is compiled into the agent — evolving it means shipping code, not flipping
+                a setting.
+              </p>
+            </div>
+          </div>
+          <div className="cost-item">
+            <span className="ci-ic">✕</span>
+            <div>
+              <h4>It can&apos;t learn</h4>
+              <p>
+                Every past human decision is a one-off message, not a record — there&apos;s no substrate for the
+                gate to get smarter over time.
+              </p>
+            </div>
+          </div>
+          <div className="cost-item">
+            <span className="ci-ic">✕</span>
+            <div>
+              <h4>It can&apos;t be proactive</h4>
+              <p>
+                Nobody nudges a quiet responder, checks back in, or escalates a decision that&apos;s stuck — the
+                interrupt fires once, then the agent just waits.
+              </p>
+            </div>
+          </div>
+          <div className="cost-item" style={{ gridColumn: "1 / -1" }}>
+            <span className="ci-ic">✕</span>
+            <div>
+              <h4>It leaves the responder guessing</h4>
+              <p>
+                No impact analysis, no recommendation, no reasoning from similar decisions before — just a one-line
+                prompt and a clock. The responder decides half-blind, every time.
+              </p>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -138,65 +342,88 @@ export default function LandingPage() {
       >
         <div className="reveal-product-card">
           <div className="sec-kicker" style={{ color: "var(--green-br)" }}>
-            This is where HGateway comes in
+            This is the shift
           </div>
           <h2 className="serif">
-            A gateway that sits between
+            Pull the gate out of the agent.
             <br />
-            your agent and <em>the human it needs.</em>
+            <em>Give Ved the lifecycle.</em>
           </h2>
           <p className="reveal-quote">
             A CRM is infrastructure for company <span className="rq-arrow">↔</span> customer interaction.
             <br />
-            HGateway is an <b>HRRM — a Human Responder Relationship Manager — for agent <span className="rq-arrow">↔</span>{" "}
-            human interaction.</b>
+            HGateway is an <b>HRRM — a Human Responder Relationship Manager — for agent{" "}
+            <span className="rq-arrow">↔</span> human interaction</b> — and Ved is the agent that runs it.
           </p>
           <p className="reveal-lede">
-            Same idea as a CRM: one system of record for every interaction, instead of each team improvising its own.
-            Your agent registers a typed request and waits — the gateway owns everything that happens next.
+            This is the shift being sold: the entire HITL lifecycle, handed to an agent built to own it — which is
+            what makes everything that follows possible in the first place.
           </p>
-          <div className="reveal-points">
-            <div className="reveal-point">
-              <span className="rp-ic">🧭</span>
-              <div>
-                <b>Who gets asked</b> — routing to the right person or channel, with a fallback if they&apos;re
-                unavailable.
-              </div>
-            </div>
-            <div className="reveal-point">
-              <span className="rp-ic">⏱️</span>
-              <div>
-                <b>What happens if they don&apos;t answer</b> — TTL, auto-forwarding, and a safe fallback response.
-              </div>
-            </div>
-            <div className="reveal-point">
-              <span className="rp-ic">🎯</span>
-              <div>
-                <b>No more guessing</b> — an interactive Slack message means the responder acts with full context
-                and confidence, not a blind reply.
-              </div>
-            </div>
-            <div className="reveal-point">
-              <span className="rp-ic">🗂️</span>
-              <div>
-                <b>Why the decision was made</b> — the responder&apos;s reasoning is captured and kept, so every
-                decision is auditable later.
-              </div>
-            </div>
-          </div>
           <p className="reveal-close">
-            Your agent code shrinks to a decorator and one typed call. Everything above is the gateway&apos;s job now.
+            One decorator. One typed call. The gate moves out of your repo — and into Ved.
           </p>
         </div>
+      </section>
+
+      <section ref={register("unlocks")} className={`unlocks wrap reveal${isIn("unlocks") ? " in" : ""}`}>
+        <div className="unlocks-head">
+          <div className="unlocks-growing">
+            <span className="led on" /> This list keeps growing
+          </div>
+          <div className="sec-kicker">What decoupling opens up</div>
+          <h2>
+            Capabilities the lifecycle <em>now makes possible.</em>
+          </h2>
+          <p>
+            Once Ved owns the full lifecycle — not just the moment of raising it — every stage becomes something
+            that can be worked on, without you touching a line of agent code.
+          </p>
+        </div>
+
+        <div className="unlocks-grid">
+          <div className="unlock-card">
+            <span className="unlock-becomes">Becomes possible</span>
+            <div className="unlock-stage">Delivered → Interaction</div>
+            <h3>Continuity, not staleness</h3>
+            <p>
+              A HITL that sits in deliberation too long doesn&apos;t just go quiet — Ved holds it, tracks it, and
+              keeps it moving, so business operations never stall on a thread nobody&apos;s watching.
+            </p>
+          </div>
+          <div className="unlock-card">
+            <span className="unlock-becomes">Becomes possible</span>
+            <div className="unlock-stage">Interaction → Resolved</div>
+            <h3>Interactive deliberation, not a guess</h3>
+            <p>
+              The responder can ask for impact analysis, request a recommendation, forward it to a peer, or
+              interrogate the HITL directly — every exchange feeding a reasoning stack that makes the next HITL
+              sharper than the last.
+            </p>
+          </div>
+          <div className="unlock-card">
+            <span className="unlock-becomes">Becomes possible</span>
+            <div className="unlock-stage">Across the lifecycle</div>
+            <h3>Org-level governance</h3>
+            <p>
+              One place to see why every human intervened, across every agent, every team — not because each one
+              logged it, but because Ved was the one running it.
+            </p>
+          </div>
+        </div>
+
+        <p className="unlocks-note">
+          None of this ships because it&apos;s a listed feature. It ships because Ved now owns a lifecycle that{" "}
+          <b>can hold it</b> — and that&apos;s exactly why the list keeps growing.
+        </p>
       </section>
 
       <section ref={register("solution")} className={`solution wrap reveal${isIn("solution") ? " in" : ""}`}>
         <div className="sec-head">
           <div className="sec-kicker">The integration</div>
           <h2>
-            What that looks like in <em>your code.</em>
+            What handing it to Ved looks like in <em>your code.</em>
           </h2>
-          <p>Two lines of your own logic. The gateway does the rest.</p>
+          <p>Two lines of your own logic. Everything after the interrupt belongs to Ved now.</p>
         </div>
 
         <div className="steps">
@@ -205,176 +432,29 @@ export default function LandingPage() {
             <h3>Decorate your HITL node</h3>
             <p>
               <code className="mono">@hg.hitl_node</code> binds the current LangGraph state and config so the SDK
-              can build context automatically — the SDK auto-inits on first use, reading your API key from{" "}
-              <code className="mono">HGATEWAY_AGENT_API_KEY</code>.
+              can build context automatically.
             </p>
           </div>
           <div className="step-card">
             <div className="step-num">2</div>
             <h3>Raise the interrupt</h3>
             <p>
-              <code className="mono">hg.raise_interrupt()</code> registers with the gateway and suspends the graph —
-              the typed response comes back on resume.
+              <code className="mono">hg.raise_interrupt()</code> hands the HITL to Ved and suspends the graph — the
+              typed response comes back on resume.
             </p>
           </div>
           <div className="step-card">
             <div className="step-num">3</div>
-            <h3>The gateway takes it from there</h3>
+            <h3>Ved owns the rest</h3>
             <p>
-              Routing, TTL, escalation and the Slack delivery are the gateway&apos;s job now — not a growing pile of
-              code in your own repo.
+              Delivery, interaction, and resolution — over Slack today, more channels next — none of that is your
+              agent&apos;s problem anymore.
             </p>
           </div>
         </div>
 
         <div className="solution-code">
-          <MiniCodePanel title="agent.py — full integration" codeHtml={INTEGRATION_CODE_HTML} />
-        </div>
-      </section>
-
-      <section
-        ref={register("teaser")}
-        className={`sandbox-teaser wrap reveal${isIn("teaser") ? " in" : ""}`}
-      >
-        <div className="teaser-card">
-          <div className="teaser-text">
-            <div className="sec-kicker">See it, don&apos;t just read it</div>
-            <h2>
-              Run the same case, <em>two ways at once.</em>
-            </h2>
-            <p>
-              The interactive sandbox plays a real agent scenario through a hand-rolled interrupt and through
-              HGateway, side by side — same request, two very different experiences.
-            </p>
-            <Link className="btn btn-primary" href={ROUTE_SANDBOX}>
-              Open the sandbox →
-            </Link>
-          </div>
-          <div className="teaser-visual">
-            <div className="teaser-vs">
-              <div className="teaser-col left">💬</div>
-              <div className="teaser-col right">✅</div>
-            </div>
-            <div className="teaser-vs-badge">vs</div>
-          </div>
-        </div>
-      </section>
-
-      <section ref={register("features")} className={`features wrap reveal${isIn("features") ? " in" : ""}`}>
-        <div className="sec-head">
-          <div className="sec-kicker">What the gateway owns</div>
-          <h2>
-            Everything you&apos;d otherwise <em>build twice.</em>
-          </h2>
-          <p>
-            Routing, timeouts, escalation and delivery — scoped per run, configured in code, not in a dashboard you
-            have to babysit.
-          </p>
-        </div>
-
-        <div className="bento">
-          <div className="bento-card">
-            <span className="bento-ic">🧭</span>
-            <h3>Routing &amp; escalation</h3>
-            <p>
-              Primary and fallback recipients per run — forward to another responder on the fly with no graph
-              changes, no redeploy.
-            </p>
-            <span className="bento-tag">Core</span>
-          </div>
-          <div className="bento-card">
-            <span className="bento-ic">⏱️</span>
-            <h3>TTL &amp; fallback</h3>
-            <p>Auto-forwards on timeout; a typed fallback keeps the graph moving if the gateway itself is unreachable.</p>
-          </div>
-          <div className="bento-card">
-            <span className="bento-ic">🗂️</span>
-            <h3>4 HITL types</h3>
-            <p>Approval, decision, context and review/edit content schemas, typed end to end.</p>
-          </div>
-          <div className="bento-card">
-            <span className="bento-ic">💬</span>
-            <h3>Slack-native delivery</h3>
-            <p>Rich block-kit messages with context, reasoning, and inline actions — not a bare text prompt.</p>
-          </div>
-          <div className="bento-card">
-            <span className="bento-ic">🧵</span>
-            <h3>Async reasoning stack</h3>
-            <p>
-              Captures the responder&apos;s reasoning after the fact, out of band — so the &quot;why&quot; behind a
-              decision doesn&apos;t get lost once the thread goes quiet.
-            </p>
-          </div>
-          <div className="bento-card">
-            <span className="bento-ic">🛡️</span>
-            <h3>Safe by default</h3>
-            <p>
-              Gateway down? Falls back to a local <code className="mono">interrupt()</code> automatically — your
-              agent never hangs.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <section ref={register("support")} className={`support wrap reveal${isIn("support") ? " in" : ""}`} id="support">
-        <div className="sec-kicker" style={{ marginBottom: 22 }}>
-          Supported ADKs &amp; channels
-        </div>
-
-        <div className="support-tracks">
-          <div className="support-track">
-            <div className="support-track-label">
-              <span className="stl-num">01</span> Agent framework <span className="stl-sub">(ADK)</span>
-            </div>
-            <div className="support-row">
-              <div className="support-slot live">
-                <span className="ss-status live">
-                  <span className="led on" /> supported
-                </span>
-                <span className="ss-ic">🦜</span>
-                <span className="ss-name">LangGraph</span>
-                <span className="ss-desc">
-                  Native <code className="mono">@hg.hitl_node</code> integration, first-class today.
-                </span>
-              </div>
-              <div className="support-slot ghost">
-                <span className="ss-status">
-                  <span className="led" /> coming soon
-                </span>
-                <span className="ss-ic">＋</span>
-                <span className="ss-name">More ADKs</span>
-                <span className="ss-desc">DSPy, Strands, OpenAI ADK, Google ADK and MS ADK are next.</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="support-seam">
-            <span />
-          </div>
-
-          <div className="support-track">
-            <div className="support-track-label">
-              <span className="stl-num">02</span> Communication channel
-            </div>
-            <div className="support-row">
-              <div className="support-slot live">
-                <span className="ss-status live">
-                  <span className="led on" /> supported
-                </span>
-                <span className="ss-ic">💬</span>
-                <span className="ss-name">Slack</span>
-                <span className="ss-desc">Rich block-kit delivery, routing and escalation, today.</span>
-              </div>
-              <div className="support-slot ghost">
-                <span className="ss-status">
-                  <span className="led" /> coming soon
-                </span>
-                <span className="ss-ic">＋</span>
-                <span className="ss-name">More channels</span>
-                <span className="ss-desc">Web and MS Teams are next.</span>
-              </div>
-            </div>
-          </div>
+          <MiniCodePanel title="review_node.py — before / after" codeHtml={INTEGRATION_DIFF_HTML} />
         </div>
       </section>
 
@@ -399,20 +479,25 @@ export default function LandingPage() {
 
       <section ref={register("finalCta")} className={`final-cta wrap reveal${isIn("finalCta") ? " in" : ""}`}>
         <h2>
-          Stop hand-rolling <em>human-in-the-loop.</em>
+          Stop welding the gate <em>into your agents.</em>
         </h2>
-        <p>Try the sandbox first — no signup, no API calls, just the two experiences side by side.</p>
+        <p>Early access is invite-only — every workspace is set up directly with us, not through self-serve signup.</p>
         <div className="hero-ctas">
-          <Link className="btn btn-primary" href={ROUTE_SANDBOX}>
-            Try the sandbox →
-          </Link>
+          <button
+            type="button"
+            className="btn btn-highlight invite-trigger"
+            onClick={() => setIsInviteOpen(true)}
+          >
+            <span className="shine" />
+            Request invite<span className="seal">✓</span>
+          </button>
           <a className="btn btn-ghost" href={`${DASHBOARD_URL}/login`}>
             Sign in to the dashboard
           </a>
         </div>
       </section>
 
-      <footer>theved.ai — HGateway is a prototype product surface for design validation.</footer>
+      <footer>theved.ai — HGateway is a prototype product surface for design validation (v4 synthesis draft).</footer>
     </div>
   );
 }
