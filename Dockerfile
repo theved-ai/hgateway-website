@@ -16,6 +16,8 @@ RUN npm run build
 FROM node:20-slim AS run
 WORKDIR /app
 ENV NODE_ENV=production
+# curl for the release workflow's post-deploy healthcheck.
+RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf /var/lib/apt/lists/*
 # `output: "standalone"` (next.config.ts) traces only the node_modules the server actually
 # needs, so the runtime stage never installs the full dependency tree.
 COPY --from=build /app/public ./public
