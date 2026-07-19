@@ -1,0 +1,1052 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>HGateway — Human-in-the-loop for LangGraph agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#ece3d3;
+    --rail:#e2d7c1;
+    --field:#f2ebdd;
+    --card:#f5efe3;
+    --deep:#efe7d6;
+    --border:#d3c6ab;
+    --border-soft:#ded2bb;
+    --text:#2a2417;
+    --muted:#655b47;
+    --muted2:#837961;
+    --muted3:#9a9077;
+
+    --green:#0c8f44;
+    --green-br:#0a7a3a;
+    --green-tint:rgba(12,143,68,.10);
+    --btn-top:#26bd68;
+    --btn-mid:#12a050;
+    --btn-bot:#0a8340;
+    --btn-edge:#06582a;
+
+    --red:#a8402a;
+    --red-tint:rgba(168,64,42,.09);
+    --red-border:#d9a98e;
+
+    --on-accent:#ffffff;
+    --hl: rgba(255,255,255,.35);
+
+    --sk-bg:#1a1d21;
+    --sk-text-strong:#ffffff;
+    --sk-text-dim:#96999e;
+    --sk-border:#2c2d30;
+    --sk-tag-bg:rgba(224,146,64,.14);
+    --sk-tag-border:#8a5a2b;
+    --sk-tag-text:#e0a458;
+    --sk-green:#2eb67d;
+    --sk-red:#e0384d;
+    --sk-blue:#36c5f0;
+    --sk-purple:#9b51e0;
+    --sk-orange:#ecb22e;
+    --sk-btn-bg:#2c2d30;
+    --sk-btn-border:#3d3e42;
+    --sk-mention-bg:rgba(224,146,64,.16);
+  }
+
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--bg);
+    color:var(--text);
+    font-family:'IBM Plex Sans', system-ui, sans-serif;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  .serif{font-family:'Fraunces', Georgia, serif;}
+  .mono{font-family:'IBM Plex Mono', ui-monospace, monospace;}
+  a{color:inherit;}
+  code.mono{background:var(--field);border:1px solid var(--border);border-radius:5px;padding:1px 6px;font-size:.92em;}
+
+  section{position:relative;}
+  .wrap{max-width:1160px;margin:0 auto;padding:0 32px;}
+
+  /* reveal-on-scroll */
+  .reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease, transform .6s ease;}
+  .reveal.in{opacity:1;transform:translateY(0);}
+
+  /* ================= site nav ================= */
+  .site-nav{
+    background:var(--rail);border-bottom:1px solid var(--border);
+    padding:10px 32px;display:flex;align-items:center;justify-content:space-between;
+    position:sticky;top:0;z-index:40;
+    box-shadow:0 1px 0 rgba(255,255,255,.4) inset, 0 2px 8px rgba(42,36,23,.04);
+  }
+  .site-nav-left{display:flex;align-items:center;gap:28px;}
+  .site-nav-brand{display:flex;align-items:center;gap:9px;}
+  .brand-mark{width:28px;height:28px;border-radius:8px;object-fit:cover;flex-shrink:0;background:var(--card);border:1px solid var(--border-soft);}
+  .site-nav-name{font-weight:700;font-size:15px;}
+
+  .site-nav-links{
+    display:flex;gap:2px;background:var(--field);border:1px solid var(--border);
+    border-radius:11px;padding:3px;
+  }
+  .nav-link{
+    position:relative;font-size:12.5px;font-weight:600;color:var(--muted2);text-decoration:none;
+    padding:7px 14px;border-radius:8px;transition:color .15s ease, background .15s ease;
+  }
+  .nav-link:hover{color:var(--text);background:rgba(42,36,23,.04);}
+  .nav-link.active{
+    color:var(--text);background:var(--card);
+    box-shadow:0 1px 3px rgba(42,36,23,.12), inset 0 0 0 1px var(--border-soft);
+  }
+  .nav-link.active::after{
+    content:'';position:absolute;left:50%;bottom:-3px;transform:translateX(-50%);
+    width:5px;height:5px;border-radius:50%;background:var(--green);
+  }
+
+  .site-nav-right{display:flex;align-items:center;gap:10px;}
+  .dash-link{
+    font-size:12.5px;font-weight:600;color:var(--muted);text-decoration:none;
+    padding:8px 12px;border-radius:8px;display:inline-flex;align-items:center;gap:6px;
+    transition:color .15s ease, background .15s ease;
+  }
+  .dash-link:hover{color:var(--text);background:rgba(42,36,23,.05);}
+
+  .signin-btn{
+    appearance:none;border:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:12.5px;color:#fff;
+    padding:8px 18px;border-radius:9px;
+    background:linear-gradient(180deg,var(--btn-top),var(--btn-mid) 55%,var(--btn-bot));
+    box-shadow: inset 0 1px 0 var(--hl), 0 2px 0 var(--btn-edge), 0 3px 8px rgba(10,131,64,.18);
+    transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .signin-btn:hover{transform:translateY(-1px);box-shadow:inset 0 1px 0 var(--hl), 0 3px 0 var(--btn-edge), 0 5px 12px rgba(10,131,64,.24);}
+  .signin-btn:active{transform:translateY(1px);box-shadow:inset 0 1px 0 var(--hl), 0 1px 0 var(--btn-edge);}
+
+  /* ================= hero ================= */
+  .hero{
+    padding:76px 32px 64px 32px;position:relative;overflow:hidden;
+    background-image:radial-gradient(circle, rgba(12,143,68,.055) 1px, transparent 1.6px);
+    background-size:16px 16px;
+  }
+  .hero-inner{
+    max-width:1160px;margin:0 auto;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center;
+  }
+  @media (max-width:980px){ .hero-inner{grid-template-columns:1fr;} }
+
+  .hero-kicker{
+    display:inline-flex;align-items:center;gap:8px;
+    font-size:11.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;
+    color:var(--green-br);margin-bottom:18px;background:var(--green-tint);
+    border:1px solid #b0cca7;padding:6px 12px;border-radius:20px;
+  }
+  .hero-kicker .dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulseDot 2s ease-in-out infinite;}
+  @keyframes pulseDot{0%,100%{opacity:1;}50%{opacity:.35;}}
+
+  .hero h1{
+    font-size:52px;line-height:1.06;margin:0 0 20px 0;font-weight:600;
+    letter-spacing:-.015em;
+  }
+  .hero h1 em{font-style:italic;color:var(--green-br);}
+  .hero p.lede{font-size:16px;color:var(--muted2);max-width:520px;line-height:1.65;margin:0 0 30px 0;}
+  .hero p.lede code{font-size:.9em;}
+
+  .hero-ctas{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:34px;}
+  .btn{
+    appearance:none;cursor:pointer;font-family:inherit;font-weight:700;font-size:13.5px;
+    padding:13px 22px;border-radius:10px;text-decoration:none;display:inline-flex;align-items:center;gap:8px;
+    transition:transform .12s ease;
+  }
+  .btn:hover{transform:translateY(-1px);}
+  .btn-primary{
+    color:#fff;border:none;
+    background:linear-gradient(180deg,var(--btn-top),var(--btn-mid) 55%,var(--btn-bot));
+    box-shadow: inset 0 1px 0 var(--hl), 0 3px 0 var(--btn-edge);
+  }
+  .btn-primary:active{transform:translateY(2px);box-shadow:inset 0 1px 0 var(--hl), 0 1px 0 var(--btn-edge);}
+  .btn-ghost{
+    color:var(--text);background:var(--field);border:1.5px solid var(--border);
+  }
+  .btn-ghost:hover{background:var(--card);}
+  .btn-highlight{
+    position:relative;color:#0a4d26;
+    background:linear-gradient(180deg, #eefbf2, var(--card) 65%);
+    border:1.5px dashed var(--green);padding-right:30px;
+    box-shadow:
+      inset 0 1px 0 rgba(255,255,255,.8),
+      inset 0 -3px 4px rgba(10,131,64,.22),
+      0 3px 8px rgba(42,36,23,.12);
+    transition:background .16s ease;
+    animation:invite3dGlow 2.2s ease-in-out infinite;
+  }
+  @keyframes invite3dGlow{
+    0%,100%{
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.8),
+        inset 0 -3px 4px rgba(10,131,64,.22),
+        0 3px 8px rgba(42,36,23,.12),
+        0 0 0 0 rgba(46,204,113,0);
+      transform:translateY(0) scale(1);
+    }
+    50%{
+      box-shadow:
+        inset 0 1px 0 rgba(255,255,255,.95),
+        inset 0 -4px 6px rgba(10,131,64,.3),
+        0 12px 26px rgba(42,36,23,.16),
+        0 0 34px 10px rgba(46,204,113,.55);
+      transform:translateY(-4px) scale(1.035);
+    }
+  }
+  .btn-highlight::before,.btn-highlight::after{
+    content:'';position:absolute;top:50%;transform:translateY(-50%);
+    width:13px;height:13px;border-radius:50%;background:var(--bg);
+    border:1.5px dashed var(--green);z-index:2;
+  }
+  .btn-highlight::before{left:-7px;}
+  .btn-highlight::after{right:-7px;}
+  .btn-highlight .seal{
+    position:absolute;top:-11px;right:-11px;width:26px;height:26px;border-radius:50%;
+    background:radial-gradient(circle at 35% 30%, var(--btn-top), var(--btn-mid) 60%, var(--btn-bot));
+    box-shadow:inset 0 1px 0 var(--hl), 0 3px 6px rgba(42,36,23,.28);
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:700;font-style:italic;font-size:11px;color:#fff;
+    transform:rotate(-9deg);transition:transform .2s cubic-bezier(.2,.85,.3,1);z-index:3;
+    animation:sealWobble 4.5s ease-in-out infinite;
+  }
+  @keyframes sealWobble{
+    0%,100%{transform:rotate(-9deg);}
+    50%{transform:rotate(-4deg);}
+  }
+  .btn-highlight:hover{
+    background:var(--green-tint);transform:translateY(-2px);
+    box-shadow:0 10px 20px rgba(12,143,68,.2);
+    animation-play-state:paused;
+  }
+  .btn-highlight:hover .seal{transform:rotate(6deg) scale(1.1);animation-play-state:paused;}
+  .btn-highlight:active{transform:translateY(0);}
+
+  .hero-trust{display:flex;align-items:center;gap:18px;font-size:12px;color:var(--muted2);}
+  .hero-trust .stack{display:flex;}
+  .hero-trust .stack span{
+    width:24px;height:24px;border-radius:50%;background:var(--card);border:2px solid var(--bg);
+    display:flex;align-items:center;justify-content:center;font-size:11px;margin-left:-7px;
+  }
+  .hero-trust .stack span:first-child{margin-left:0;}
+
+  /* hero code panel */
+  .hero-code-wrap{position:relative;}
+  .hero-code-wrap::before{
+    content:'';position:absolute;inset:10px -10px -10px 10px;border-radius:14px;
+    background:repeating-linear-gradient(135deg, rgba(168,64,42,.05) 0 12px, transparent 12px 24px);
+    z-index:0;
+  }
+  .mini-ide{background:#1e1e1e;border-radius:12px;overflow:hidden;position:relative;z-index:1;box-shadow:0 18px 40px rgba(42,36,23,.28);}
+  .mini-ide-head{
+    background:#252526;padding:9px 14px;font-size:11.5px;color:#969696;
+    display:flex;align-items:center;gap:8px;border-bottom:1px solid #1e1e1e;
+  }
+  .mini-ide-head .dots{display:flex;gap:5px;margin-right:4px;}
+  .mini-ide-head .dots span{width:9px;height:9px;border-radius:50%;}
+  .mini-ide-head .dots span:nth-child(1){background:#ff5f56;}
+  .mini-ide-head .dots span:nth-child(2){background:#ffbd2e;}
+  .mini-ide-head .dots span:nth-child(3){background:#27c93f;}
+  .mini-code-area{display:flex;}
+  .mini-gutter{
+    padding:16px 10px 16px 16px;text-align:right;color:#5a5a5a;
+    font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.65;
+    user-select:none;background:#1e1e1e;flex-shrink:0;
+  }
+  .mini-code{
+    margin:0;padding:16px 18px;font-family:'IBM Plex Mono',monospace;
+    font-size:12px;line-height:1.65;color:#d4d4d4;white-space:pre;overflow-x:auto;
+  }
+  .tok-kw{color:#569cd6;} .tok-com{color:#6a9955;font-style:italic;}
+  .tok-dec{color:#dcdcaa;} .tok-fn{color:#dcdcaa;} .tok-str{color:#ce9178;}
+  .hl-block{display:block;background:rgba(46,160,67,.18);border-left:3px solid #3fb950;margin:0 -18px;padding:2px 15px;}
+  .hl-block.diff-add{background:rgba(46,160,67,.18);border-left:3px solid #3fb950;}
+  .hl-block.diff-remove{background:rgba(248,81,73,.16);border-left:3px solid #f85149;}
+  .hero-code-caption{
+    display:flex;align-items:center;gap:8px;margin-top:14px;font-size:12px;color:var(--muted2);position:relative;z-index:1;
+  }
+  .hero-code-caption .badge{
+    font-family:'Fraunces',serif;font-weight:700;font-style:italic;color:var(--green-br);
+    background:var(--green-tint);border:1.5px solid #b0cca7;padding:2px 9px;border-radius:6px;font-size:11.5px;
+  }
+
+  /* ================= section headers ================= */
+  .sec-kicker{
+    font-size:11.5px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;
+    color:var(--muted2);margin-bottom:10px;
+  }
+  .sec-head{max-width:640px;margin:0 0 42px 0;}
+  .sec-head h2{font-size:32px;margin:0 0 12px 0;font-weight:600;letter-spacing:-.01em;line-height:1.15;}
+  .sec-head h2 em{font-style:italic;color:var(--green-br);}
+  .sec-head p{font-size:14.5px;color:var(--muted2);line-height:1.6;margin:0;}
+  .sec-head.center{margin-left:auto;margin-right:auto;text-align:center;}
+
+  /* ================= problem section ================= */
+  .problem{padding:96px 0;}
+  .problem-cols{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+  @media (max-width:860px){ .problem-cols{grid-template-columns:1fr;} }
+
+  .pain-panel{
+    background:var(--card);border:1px solid var(--border-soft);border-radius:16px;
+    padding:26px 26px 22px 26px;position:relative;overflow:hidden;
+  }
+  .pain-panel.builder{background-image:repeating-linear-gradient(135deg, rgba(168,64,42,.035) 0 12px, transparent 12px 24px);}
+  .pain-panel.responder{background-image:radial-gradient(circle, rgba(12,143,68,.045) 1px, transparent 1.6px);background-size:14px 14px;}
+
+  .panel-label{
+    display:inline-flex;align-items:center;gap:9px;margin-bottom:18px;
+  }
+  .panel-avatar{
+    width:28px;height:28px;border-radius:50%;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+    font-family:'Fraunces',serif;font-weight:700;font-style:italic;font-size:13px;
+    background:var(--deep);border:1px solid var(--border-soft);color:var(--text);
+  }
+  .panel-label .who{font-size:14.5px;font-weight:700;}
+  .panel-label .role{
+    font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--muted3);background:var(--field);border:1px solid var(--border);
+    padding:2px 8px;border-radius:20px;margin-left:2px;
+  }
+
+  .chip-row{display:flex;flex-wrap:wrap;gap:7px;}
+  @keyframes chipPop{
+    from{opacity:0;transform:translateY(4px) scale(.92);}
+    to{opacity:1;transform:translateY(0) scale(1);}
+  }
+  .pain-chip{
+    appearance:none;cursor:pointer;font-family:'IBM Plex Sans',sans-serif;
+    font-size:12px;font-weight:600;color:var(--text);
+    background:var(--field);border:1px solid var(--border);border-radius:20px;
+    padding:7px 13px 7px 11px;display:inline-flex;align-items:center;gap:6px;
+    opacity:0;transform:translateY(4px) scale(.92);
+    transition:border-color .15s ease, background .15s ease, transform .1s ease;
+  }
+  .pain-chip.pop{animation:chipPop .32s ease forwards;}
+  .pain-chip:hover{transform:translateY(-1px);}
+  .pain-chip .ic{font-size:10.5px;flex-shrink:0;color:var(--red);}
+  .pain-chip.active{background:var(--red-tint);border-color:var(--red-border);}
+
+  .pain-detail{
+    max-height:0;overflow:hidden;opacity:0;
+    font-size:12.5px;line-height:1.55;color:var(--muted);
+    background:var(--field);border:1px solid var(--border-soft);border-radius:10px;
+    margin-top:0;position:relative;
+    transition:max-height .22s ease, opacity .2s ease, margin-top .22s ease, padding .22s ease;
+    padding:0 13px;
+  }
+  .pain-detail.show{max-height:160px;opacity:1;margin-top:12px;padding:11px 13px;}
+  .detail-arrow{
+    position:absolute;top:-6px;left:22px;width:11px;height:11px;
+    background:var(--field);border-left:1px solid var(--border-soft);border-top:1px solid var(--border-soft);
+    transform:rotate(45deg);
+  }
+
+  .problem-note{
+    text-align:center;margin-top:28px;font-family:'Fraunces',serif;font-style:italic;
+    font-size:14.5px;color:var(--muted2);
+  }
+  .problem-note em{color:var(--green-br);font-weight:600;font-style:italic;}
+  .problem-note b{font-weight:700;}
+
+  /* ================= product reveal ================= */
+  .reveal-product{padding:20px 0 96px 0;}
+  .reveal-product-card{
+    max-width:760px;margin:0 auto;text-align:center;
+    background:var(--card);border:1px solid var(--border-soft);border-radius:20px;
+    padding:48px 44px;position:relative;overflow:hidden;
+  }
+  .reveal-product-card::before{
+    content:'';position:absolute;inset:0;
+    background-image:radial-gradient(circle, rgba(12,143,68,.05) 1px, transparent 1.6px);background-size:16px 16px;
+    pointer-events:none;
+  }
+  .reveal-product-card > *{position:relative;z-index:1;}
+  .reveal-product-card .sec-kicker{text-align:center;}
+  .reveal-product-card h2{font-size:30px;font-weight:600;margin:0 0 18px 0;line-height:1.2;letter-spacing:-.01em;}
+  .reveal-product-card h2 em{font-style:italic;color:var(--green-br);}
+  .reveal-quote{
+    font-family:'Fraunces',serif;font-style:italic;font-weight:600;
+    font-size:21px;line-height:1.45;color:var(--text);max-width:600px;margin:0 auto 18px auto;
+  }
+  .reveal-quote .rq-arrow{color:var(--green-br);font-style:normal;font-weight:700;}
+  .reveal-lede{font-size:13.5px;color:var(--muted2);line-height:1.6;max-width:520px;margin:0 auto 28px auto;}
+
+  .reveal-points{display:grid;grid-template-columns:1fr 1fr;gap:16px;text-align:left;margin-bottom:28px;}
+  @media (max-width:640px){ .reveal-points{grid-template-columns:1fr;} }
+  .reveal-point{
+    display:flex;gap:12px;align-items:flex-start;background:var(--field);
+    border:1px solid var(--border);border-radius:12px;padding:14px 16px;
+  }
+  .reveal-point .rp-ic{font-size:18px;flex-shrink:0;line-height:1.3;}
+  .reveal-point div{font-size:12.5px;color:var(--muted);line-height:1.5;}
+  .reveal-point b{color:var(--text);font-weight:700;}
+
+  .reveal-close{
+    font-family:'Fraunces',serif;font-style:italic;font-size:14.5px;color:var(--green-br);
+    font-weight:600;margin:0;
+  }
+
+  /* ================= solution / how it works ================= */
+  .solution{padding:40px 0 100px 0;}
+  .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:22px;margin-bottom:44px;}
+  @media (max-width:900px){ .steps{grid-template-columns:1fr;} }
+  .step-card{
+    background:var(--card);border:1px solid var(--border-soft);border-radius:14px;padding:20px 20px 18px 20px;
+  }
+  .step-num{
+    width:26px;height:26px;border-radius:50%;background:var(--green-tint);border:1.5px solid #b0cca7;
+    display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:var(--green-br);
+    margin-bottom:12px;
+  }
+  .step-card h3{font-size:14.5px;margin:0 0 6px 0;font-weight:700;}
+  .step-card p{font-size:12.5px;color:var(--muted2);line-height:1.55;margin:0;}
+
+  .solution-code .mini-ide{box-shadow:0 10px 26px rgba(42,36,23,.18);}
+  .solution-code{max-width:820px;margin:0 auto;}
+
+  /* ================= sandbox teaser ================= */
+  .sandbox-teaser{padding:0 0 100px 0;}
+  .teaser-card{
+    background:var(--rail);border:1px solid var(--border);border-radius:20px;
+    padding:44px;display:grid;grid-template-columns:1fr auto;gap:36px;align-items:center;position:relative;overflow:hidden;
+  }
+  @media (max-width:860px){ .teaser-card{grid-template-columns:1fr;text-align:center;} .teaser-visual{margin:0 auto;} }
+  .teaser-card::before{
+    content:'';position:absolute;inset:0;
+    background-image:radial-gradient(circle, rgba(12,143,68,.05) 1px, transparent 1.6px);background-size:16px 16px;
+    pointer-events:none;
+  }
+  .teaser-text h2{font-size:26px;margin:0 0 12px 0;font-weight:600;}
+  .teaser-text h2 em{font-style:italic;color:var(--green-br);}
+  .teaser-text p{font-size:14px;color:var(--muted2);line-height:1.6;max-width:440px;margin:0 0 22px 0;}
+
+  .teaser-visual{
+    width:220px;height:150px;position:relative;flex-shrink:0;
+  }
+  .teaser-vs{
+    position:absolute;inset:0;display:flex;gap:10px;
+  }
+  .teaser-col{
+    flex:1;border-radius:12px;background:var(--card);border:1px solid var(--border-soft);
+    display:flex;align-items:center;justify-content:center;font-size:26px;
+    box-shadow:0 8px 18px rgba(42,36,23,.14);
+  }
+  .teaser-col.left{transform:rotate(-4deg) translateY(4px);background-image:repeating-linear-gradient(135deg, rgba(168,64,42,.06) 0 10px, transparent 10px 20px);}
+  .teaser-col.right{transform:rotate(4deg) translateY(-4px);background-image:radial-gradient(circle, rgba(12,143,68,.08) 1px, transparent 1.5px);background-size:12px 12px;}
+  .teaser-vs-badge{
+    position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
+    width:40px;height:40px;border-radius:50%;background:var(--bg);border:2px solid var(--text);
+    display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:700;font-style:italic;font-size:13px;
+    box-shadow:0 3px 0 var(--border);z-index:2;
+  }
+
+  /* ================= feature bento grid ================= */
+  .features{padding:0 0 100px 0;}
+  .bento{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-items:stretch;
+  }
+  @media (max-width:860px){ .bento{grid-template-columns:repeat(2,1fr);} }
+  @media (max-width:560px){ .bento{grid-template-columns:1fr;} }
+  .bento-card{
+    background:var(--card);border:1px solid var(--border-soft);border-radius:16px;
+    padding:22px;display:flex;flex-direction:column;gap:12px;
+    transition:transform .18s ease, box-shadow .18s ease;
+  }
+  .bento-card:hover{transform:translateY(-3px);box-shadow:0 14px 26px rgba(42,36,23,.14);}
+  .bento-ic{font-size:22px;}
+  .bento-card h3{font-size:14.5px;margin:0;font-weight:700;}
+  .bento-card p{font-size:12.5px;color:var(--muted2);line-height:1.55;margin:0;}
+  .bento-tag{
+    align-self:flex-start;font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;
+    color:var(--green-br);background:var(--green-tint);border:1px solid #b0cca7;padding:2px 8px;border-radius:20px;
+  }
+
+  /* ================= support / compatibility ================= */
+  .support{padding:0 0 100px 0;}
+  .support-tracks{display:flex;flex-direction:column;gap:0;}
+  .support-track{padding:22px 0;}
+  .support-track-label{
+    display:flex;align-items:baseline;gap:10px;font-size:13px;font-weight:700;color:var(--muted);
+    margin-bottom:16px;
+  }
+  .stl-num{
+    font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;color:var(--muted3);
+    background:var(--field);border:1px solid var(--border);border-radius:6px;padding:2px 7px;
+  }
+  .stl-sub{font-weight:600;color:var(--muted3);font-size:11.5px;}
+
+  .support-seam{
+    display:flex;align-items:center;margin:0;
+  }
+  .support-seam span{
+    display:block;width:100%;height:1px;
+    background:repeating-linear-gradient(90deg,var(--border) 0 8px, transparent 8px 16px);
+  }
+
+  .support-row{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+  @media (max-width:760px){ .support-row{grid-template-columns:1fr;} }
+
+  .support-slot{
+    border-radius:14px;padding:22px 22px 20px 22px;position:relative;
+    display:flex;flex-direction:column;gap:4px;
+  }
+  .support-slot.live{
+    background:var(--card);border:1.5px solid var(--green);
+    box-shadow:0 8px 20px rgba(12,143,68,.12);
+  }
+  .support-slot.live::before{
+    content:'';position:absolute;inset:0;border-radius:14px;
+    background-image:radial-gradient(circle, rgba(12,143,68,.05) 1px, transparent 1.6px);
+    background-size:14px 14px;pointer-events:none;
+  }
+  .support-slot.live > *{position:relative;z-index:1;}
+  .support-slot.ghost{
+    background:transparent;border:1.5px dashed var(--muted3);opacity:.62;
+  }
+  .support-slot.ghost .ss-ic{filter:grayscale(1);opacity:.7;}
+  .support-slot.ghost:hover{opacity:.85;}
+
+  .ss-status{
+    display:inline-flex;align-items:center;gap:7px;
+    font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+    color:var(--muted3);margin-bottom:12px;
+  }
+  .ss-status.live{color:var(--green-br);}
+  .led{position:relative;width:8px;height:8px;border-radius:50%;background:var(--muted3);flex-shrink:0;}
+  .led.on{background:var(--green);box-shadow:0 0 0 0 rgba(12,143,68,.55);animation:ledBlink 1.8s ease-in-out infinite;}
+  .led.on::after{
+    content:'';position:absolute;inset:-5px;border-radius:50%;
+    background:radial-gradient(circle, rgba(12,143,68,.45) 0%, transparent 70%);
+    animation:ledHalo 1.8s ease-in-out infinite;
+  }
+  @keyframes ledBlink{
+    0%,100%{box-shadow:0 0 0 0 rgba(12,143,68,.5);}
+    50%{box-shadow:0 0 0 5px rgba(12,143,68,0);}
+  }
+  @keyframes ledHalo{
+    0%,100%{opacity:.55;transform:scale(1);}
+    50%{opacity:0;transform:scale(1.7);}
+  }
+  .ss-ic{font-size:26px;margin-bottom:2px;}
+  .ss-name{font-size:16px;font-weight:700;font-family:'Fraunces',serif;}
+  .support-slot.ghost .ss-name{color:var(--muted);font-style:italic;}
+  .ss-desc{font-size:12px;color:var(--muted2);line-height:1.5;margin-top:2px;}
+
+  /* ================= invite-only modal ================= */
+  .invite-badge{
+    display:inline-block;font-family:'Fraunces',serif;font-weight:700;font-style:italic;font-size:12.5px;
+    color:var(--red);background:rgba(168,64,42,.08);border:2px solid var(--red);border-radius:7px;
+    padding:4px 12px;transform:rotate(-2deg);margin-bottom:16px;letter-spacing:.02em;
+    mix-blend-mode:multiply;-webkit-mix-blend-mode:multiply;
+  }
+
+  .modal-backdrop{
+    position:fixed;inset:0;z-index:100;display:flex;align-items:center;justify-content:center;
+    background:rgba(26,22,13,.5);backdrop-filter:blur(3px);padding:24px;
+    opacity:0;pointer-events:none;transition:opacity .2s ease;
+  }
+  .modal-backdrop.open{opacity:1;pointer-events:auto;}
+
+  .invite-modal{
+    background:var(--card);border:1px solid var(--border-soft);border-radius:20px;
+    padding:40px 40px 32px 40px;max-width:460px;width:100%;max-height:88vh;overflow-y:auto;
+    position:relative;box-shadow:0 30px 70px rgba(26,22,13,.35);
+    transform:translateY(14px) scale(.97);opacity:0;transition:transform .22s cubic-bezier(.2,.85,.3,1), opacity .2s ease;
+  }
+  .modal-backdrop.open .invite-modal{transform:translateY(0) scale(1);opacity:1;}
+  .invite-modal::before{
+    content:'';position:absolute;inset:0;border-radius:20px;
+    background-image:repeating-linear-gradient(135deg, rgba(168,64,42,.03) 0 12px, transparent 12px 24px);
+    pointer-events:none;
+  }
+  .invite-modal > *{position:relative;z-index:1;}
+
+  .modal-close{
+    position:absolute;top:18px;right:18px;appearance:none;border:none;cursor:pointer;
+    width:30px;height:30px;border-radius:50%;background:var(--field);border:1px solid var(--border);
+    color:var(--muted2);font-size:14px;display:flex;align-items:center;justify-content:center;z-index:2;
+  }
+  .modal-close:hover{background:var(--rail);color:var(--text);}
+
+  .invite-modal h2{font-size:24px;font-weight:600;margin:0 0 10px 0;line-height:1.18;letter-spacing:-.01em;}
+  .invite-modal h2 em{font-style:italic;color:var(--green-br);}
+  .invite-modal > p{font-size:13px;color:var(--muted2);line-height:1.55;margin:0 0 16px 0;}
+
+  .invite-meta{display:flex;flex-wrap:wrap;gap:8px 16px;margin-bottom:22px;}
+  .im-item{display:flex;align-items:center;gap:8px;font-size:11.5px;font-weight:600;color:var(--muted);}
+  .im-item .led{position:static;}
+
+  .invite-form{display:flex;flex-direction:column;gap:6px;}
+  .if-label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--muted2);margin-top:10px;}
+  .if-label:first-child{margin-top:0;}
+  .if-req{color:var(--red);margin-left:2px;}
+  .if-input{
+    font-family:'IBM Plex Sans',sans-serif;font-size:13.5px;color:var(--text);
+    background:var(--field);border:1.5px solid var(--border);border-radius:9px;
+    padding:11px 13px;outline:none;transition:border-color .15s ease;width:100%;
+  }
+  select.if-input{appearance:none;cursor:pointer;
+    background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%23837961' stroke-width='1.6' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+    background-repeat:no-repeat;background-position:right 13px center;padding-right:32px;
+  }
+  .if-input:focus{border-color:var(--green);}
+  .if-other{margin-top:6px;display:none;}
+  .if-other.show{display:block;animation:chipPop .2s ease;}
+  .invite-form .btn{margin-top:16px;justify-content:center;width:100%;}
+  .if-hint{font-size:11px;color:var(--muted3);text-align:center;margin-top:8px;}
+
+  /* ================= docs band ================= */
+  .docs-band{
+    background:var(--sk-bg);padding:70px 0;
+  }
+  .docs-inner{
+    display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+  }
+  .docs-text h2{color:#fff;font-size:24px;margin:0 0 8px 0;font-weight:600;}
+  .docs-text h2 em{font-style:italic;color:var(--sk-green);}
+  .docs-text p{color:var(--sk-text-dim);font-size:13.5px;margin:0;max-width:440px;line-height:1.6;}
+  .docs-text code{background:rgba(255,255,255,.08);border:1px solid var(--sk-border);color:#e8e8e8;border-radius:5px;padding:1px 6px;}
+  .btn-docs{
+    color:#0f1113;background:#fff;border:none;font-weight:700;font-size:13.5px;padding:13px 24px;border-radius:10px;
+    text-decoration:none;display:inline-flex;align-items:center;gap:8px;flex-shrink:0;
+  }
+  .btn-docs:hover{transform:translateY(-1px);}
+
+  /* ================= final cta ================= */
+  .final-cta{padding:100px 0;text-align:center;}
+  .final-cta h2{font-size:36px;margin:0 0 16px 0;font-weight:600;letter-spacing:-.01em;}
+  .final-cta h2 em{font-style:italic;color:var(--green-br);}
+  .final-cta p{font-size:14.5px;color:var(--muted2);margin:0 0 30px 0;}
+  .final-cta .hero-ctas{justify-content:center;}
+
+  footer{
+    border-top:1px solid var(--border);padding:26px 32px;text-align:center;
+    font-size:12px;color:var(--muted3);
+  }
+</style>
+</head>
+<body>
+
+<nav class="site-nav">
+  <div class="site-nav-left">
+    <div class="site-nav-brand">
+      <img class="brand-mark" src="assets/theved-logo.png" alt="theved.ai" />
+      <div class="site-nav-name">theved.ai</div>
+    </div>
+    <div class="site-nav-links">
+      <a class="nav-link active" href="#">Home</a>
+      <a class="nav-link" href="hitl-sandbox.html">Sandbox</a>
+      <a class="nav-link" href="#docs">Docs</a>
+    </div>
+  </div>
+  <div class="site-nav-right">
+    <a class="dash-link" href="#">Sign in</a>
+    <button class="signin-btn">Log in</button>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-inner">
+    <div>
+      <div class="hero-kicker"><span class="dot"></span> HRRM for Agents</div>
+      <h1 class="serif">The infrastructure layer for<br><em>agent-human interaction.</em></h1>
+      <p class="lede">One HITL gateway that owns every human-in-the-loop request your agents raise — across nodes, across agents.</p>
+      <div class="hero-ctas">
+        <a class="btn btn-primary" href="hitl-sandbox.html">Try the sandbox →</a>
+        <a class="btn btn-highlight invite-trigger" href="#invite">Request invite<span class="seal">✓</span></a>
+      </div>
+      <div class="hero-trust">
+        <div class="stack"><span>💰</span><span>🎧</span><span>📄</span><span>📣</span></div>
+        4 HITL types, one SDK — approval, decision, context, review/edit
+      </div>
+    </div>
+
+    <div class="hero-code-wrap">
+      <div class="mini-ide">
+        <div class="mini-ide-head"><div class="dots"><span></span><span></span><span></span></div>hitl_node.py — diff</div>
+        <div class="mini-code-area">
+          <div class="mini-gutter">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11</div>
+          <pre class="mini-code"><span class="tok-kw">import</span> hgateway_sdk <span class="tok-kw">as</span> hg
+<span class="tok-kw">from</span> hgateway_sdk <span class="tok-kw">import</span> BinaryApprovalContent
+<span class="hl-block diff-add">+<span class="tok-dec">@hg.hitl_node</span></span><span class="tok-kw">def</span> <span class="tok-fn">review_node</span>(state):
+    content = BinaryApprovalContent(
+        prompt=f<span class="tok-str">"Approve {state['summary']}?"</span>,
+    )
+
+<span class="hl-block diff-remove">-    reply = interrupt({<span class="tok-str">"question"</span>: prompt})</span><span class="hl-block diff-add">+    resp = hg.raise_interrupt(
++        <span class="tok-str">"approve-action"</span>, content
++    )</span>
+    <span class="tok-kw">return</span> {<span class="tok-str">"decision"</span>: resp[<span class="tok-str">"decision"</span>]}</pre>
+        </div>
+      </div>
+      <div class="hero-code-caption"><span class="badge">DIFF</span> one decorator, one swapped call — that's the whole migration.</div>
+    </div>
+  </div>
+</section>
+
+<section class="problem wrap reveal" id="problem">
+  <div class="sec-head center" style="margin-left:auto;margin-right:auto;max-width:720px;">
+    <div class="sec-kicker" style="text-align:center;">The problem</div>
+    <h2>Agents can act on their own — <em>until a human has to weigh in.</em></h2>
+    <p style="margin:0 auto;">That hand-off is hand-rolled today: a raw <code class="mono">interrupt()</code>, a bespoke Slack message, no owner if the reply never comes. Click a chip to see the pain, in their own words.</p>
+  </div>
+
+  <div class="problem-cols">
+    <div class="pain-panel builder">
+      <div class="panel-label"><span class="panel-avatar">S</span> <span class="who">Shubham</span><span class="role">builder</span></div>
+      <div class="chip-row" id="chipsBuilder"></div>
+      <div class="pain-detail" id="detailBuilder"></div>
+    </div>
+    <div class="pain-panel responder">
+      <div class="panel-label"><span class="panel-avatar">R</span> <span class="who">Rishabh</span><span class="role">responder</span></div>
+      <div class="chip-row" id="chipsResponder"></div>
+      <div class="pain-detail" id="detailResponder"></div>
+    </div>
+  </div>
+
+  <div class="problem-note">Every one of these is the same problem wearing a different costume: <b>the human step has no infrastructure of its own.</b></div>
+</section>
+
+<section class="reveal-product wrap reveal">
+  <div class="reveal-product-card">
+    <div class="sec-kicker" style="color:var(--green-br);">This is where HGateway comes in</div>
+    <h2 class="serif">A gateway that sits between<br>your agent and <em>the human it needs.</em></h2>
+    <p class="reveal-quote">A CRM is infrastructure for company <span class="rq-arrow">↔</span> customer interaction.<br>HGateway is an <b>HRRM — a Human Responder Relationship Manager — for agent <span class="rq-arrow">↔</span> human interaction.</b></p>
+    <p class="reveal-lede">Same idea as a CRM: one system of record for every interaction, instead of each team improvising its own. Your agent registers a typed request and waits — the gateway owns everything that happens next.</p>
+    <div class="reveal-points">
+      <div class="reveal-point"><span class="rp-ic">🧭</span><div><b>Who gets asked</b> — routing to the right person or channel, with a fallback if they're unavailable.</div></div>
+      <div class="reveal-point"><span class="rp-ic">⏱️</span><div><b>What happens if they don't answer</b> — TTL, auto-forwarding, and a safe fallback response.</div></div>
+      <div class="reveal-point"><span class="rp-ic">🎯</span><div><b>No more guessing</b> — an interactive Slack message means the responder acts with full context and confidence, not a blind reply.</div></div>
+      <div class="reveal-point"><span class="rp-ic">🗂️</span><div><b>Why the decision was made</b> — the responder's reasoning is captured and kept, so every decision is auditable later.</div></div>
+    </div>
+    <p class="reveal-close">Your agent code shrinks to a decorator and one typed call. Everything above is the gateway's job now.</p>
+  </div>
+</section>
+
+<section class="solution wrap reveal">
+  <div class="sec-head">
+    <div class="sec-kicker">The integration</div>
+    <h2>What that looks like in <em>your code.</em></h2>
+    <p>Two lines of your own logic. The gateway does the rest.</p>
+  </div>
+
+  <div class="steps">
+    <div class="step-card">
+      <div class="step-num">1</div>
+      <h3>Decorate your HITL node</h3>
+      <p><code class="mono">@hg.hitl_node</code> binds the current LangGraph state and config so the SDK can build context automatically — the SDK auto-inits on first use, reading your API key from <code class="mono">HGATEWAY_AGENT_API_KEY</code>.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">2</div>
+      <h3>Raise the interrupt</h3>
+      <p><code class="mono">hg.raise_interrupt()</code> registers with the gateway and suspends the graph — the typed response comes back on resume.</p>
+    </div>
+    <div class="step-card">
+      <div class="step-num">3</div>
+      <h3>The gateway takes it from there</h3>
+      <p>Routing, TTL, escalation and the Slack delivery are the gateway's job now — not a growing pile of code in your own repo.</p>
+    </div>
+  </div>
+
+  <div class="solution-code">
+    <div class="mini-ide">
+      <div class="mini-ide-head"><div class="dots"><span></span><span></span><span></span></div>agent.py — full integration</div>
+      <div class="mini-code-area">
+        <div class="mini-gutter">1<br>2<br>3<br>4<br>5<br>6<br>7<br>8<br>9<br>10<br>11<br>12</div>
+        <pre class="mini-code"><span class="tok-kw">import</span> hgateway_sdk <span class="tok-kw">as</span> hg
+<span class="tok-kw">from</span> hgateway_sdk <span class="tok-kw">import</span> BinaryApprovalContent, RunFeatures, Routing, Recipients
+
+<span class="tok-dec">@hg.hitl_node</span>
+<span class="tok-kw">def</span> <span class="tok-fn">review_node</span>(state):
+    content = BinaryApprovalContent(prompt=f<span class="tok-str">"Approve {state['summary']}?"</span>)
+
+    resp = hg.raise_interrupt(
+        <span class="tok-str">"approve-action"</span>, content,
+        features=RunFeatures(routing=Routing(primary=Recipients(channels=[<span class="tok-str">"#ops"</span>]))),
+        fallback={<span class="tok-str">"decision"</span>: <span class="tok-str">"reject"</span>},
+    )
+    <span class="tok-kw">return</span> {<span class="tok-str">"decision"</span>: resp[<span class="tok-str">"decision"</span>]}</pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="sandbox-teaser wrap reveal">
+  <div class="teaser-card">
+    <div class="teaser-text">
+      <div class="sec-kicker">See it, don't just read it</div>
+      <h2>Run the same case, <em>two ways at once.</em></h2>
+      <p>The interactive sandbox plays a real agent scenario through a hand-rolled interrupt and through HGateway, side by side — same request, two very different experiences.</p>
+      <a class="btn btn-primary" href="hitl-sandbox.html">Open the sandbox →</a>
+    </div>
+    <div class="teaser-visual">
+      <div class="teaser-vs">
+        <div class="teaser-col left">💬</div>
+        <div class="teaser-col right">✅</div>
+      </div>
+      <div class="teaser-vs-badge">vs</div>
+    </div>
+  </div>
+</section>
+
+<section class="features wrap reveal">
+  <div class="sec-head">
+    <div class="sec-kicker">What the gateway owns</div>
+    <h2>Everything you'd otherwise <em>build twice.</em></h2>
+    <p>Routing, timeouts, escalation and delivery — scoped per run, configured in code, not in a dashboard you have to babysit.</p>
+  </div>
+
+  <div class="bento">
+    <div class="bento-card">
+      <span class="bento-ic">🧭</span><h3>Routing &amp; escalation</h3><p>Primary and fallback recipients per run — forward to another responder on the fly with no graph changes, no redeploy.</p>
+      <span class="bento-tag">Core</span>
+    </div>
+    <div class="bento-card">
+      <span class="bento-ic">⏱️</span><h3>TTL &amp; fallback</h3><p>Auto-forwards on timeout; a typed fallback keeps the graph moving if the gateway itself is unreachable.</p>
+    </div>
+    <div class="bento-card">
+      <span class="bento-ic">🗂️</span><h3>4 HITL types</h3><p>Approval, decision, context and review/edit content schemas, typed end to end.</p>
+    </div>
+    <div class="bento-card">
+      <span class="bento-ic">💬</span><h3>Slack-native delivery</h3><p>Rich block-kit messages with context, reasoning, and inline actions — not a bare text prompt.</p>
+    </div>
+    <div class="bento-card">
+      <span class="bento-ic">🧵</span><h3>Async reasoning stack</h3><p>Captures the responder's reasoning after the fact, out of band — so the "why" behind a decision doesn't get lost once the thread goes quiet.</p>
+    </div>
+    <div class="bento-card">
+      <span class="bento-ic">🛡️</span><h3>Safe by default</h3><p>Gateway down? Falls back to a local <code class="mono">interrupt()</code> automatically — your agent never hangs.</p>
+    </div>
+  </div>
+</section>
+
+<section class="support wrap reveal" id="support">
+  <div class="sec-kicker" style="margin-bottom:22px;">Supported ADKs &amp; channels</div>
+
+  <div class="support-tracks">
+    <div class="support-track">
+      <div class="support-track-label"><span class="stl-num">01</span> Agent framework <span class="stl-sub">(ADK)</span></div>
+      <div class="support-row">
+        <div class="support-slot live">
+          <span class="ss-status live"><span class="led on"></span> supported</span>
+          <span class="ss-ic">🦜</span>
+          <span class="ss-name">LangGraph</span>
+          <span class="ss-desc">Native <code class="mono">@hg.hitl_node</code> integration, first-class today.</span>
+        </div>
+        <div class="support-slot ghost">
+          <span class="ss-status"><span class="led"></span> coming soon</span>
+          <span class="ss-ic">＋</span>
+          <span class="ss-name">More ADKs</span>
+          <span class="ss-desc">DSPy, Strands, OpenAI ADK, Google ADK and MS ADK are next.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="support-seam"><span></span></div>
+
+    <div class="support-track">
+      <div class="support-track-label"><span class="stl-num">02</span> Communication channel</div>
+      <div class="support-row">
+        <div class="support-slot live">
+          <span class="ss-status live"><span class="led on"></span> supported</span>
+          <span class="ss-ic">💬</span>
+          <span class="ss-name">Slack</span>
+          <span class="ss-desc">Rich block-kit delivery, routing and escalation, today.</span>
+        </div>
+        <div class="support-slot ghost">
+          <span class="ss-status"><span class="led"></span> coming soon</span>
+          <span class="ss-ic">＋</span>
+          <span class="ss-name">More channels</span>
+          <span class="ss-desc">Web and MS Teams are next.</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="modal-backdrop" id="inviteBackdrop">
+  <div class="invite-modal" role="dialog" aria-modal="true" aria-labelledby="inviteModalTitle">
+    <button class="modal-close" id="inviteClose" aria-label="Close">✕</button>
+    <div class="invite-badge">Early Access</div>
+    <div class="sec-kicker">Currently invite-only</div>
+    <h2 id="inviteModalTitle" class="serif">We're onboarding<br><em>teams by hand.</em></h2>
+    <p>HGateway is early — every workspace today is set up directly with us, not through self-serve signup.</p>
+    <div class="invite-meta">
+      <span class="im-item"><span class="led on"></span> LangGraph teams first</span>
+      <span class="im-item"><span class="led on"></span> Slack workspace required</span>
+    </div>
+
+    <form class="invite-form" onsubmit="return false;">
+      <label class="if-label">Work email<span class="if-req">*</span></label>
+      <input class="if-input" type="email" placeholder="you@company.com" required />
+
+      <label class="if-label">ADK you're using<span class="if-req">*</span></label>
+      <select class="if-input" id="adkSelect" required>
+        <option value="" disabled selected>Select an ADK…</option>
+        <option value="langgraph">LangGraph — supported today</option>
+        <option value="dspy">DSPy — coming soon</option>
+        <option value="strands">Strands — coming soon</option>
+        <option value="openai-adk">OpenAI ADK — coming soon</option>
+        <option value="google-adk">Google ADK — coming soon</option>
+        <option value="ms-adk">MS ADK — coming soon</option>
+        <option value="other">Other</option>
+      </select>
+      <input class="if-input if-other" id="adkOther" type="text" placeholder="Which ADK?" />
+
+      <label class="if-label">Comm channel you're using<span class="if-req">*</span></label>
+      <select class="if-input" id="channelSelect" required>
+        <option value="" disabled selected>Select a channel…</option>
+        <option value="slack">Slack — supported today</option>
+        <option value="web">Web — coming soon</option>
+        <option value="ms-teams">MS Teams — coming soon</option>
+        <option value="other">Other</option>
+      </select>
+      <input class="if-input if-other" id="channelOther" type="text" placeholder="Which channel?" />
+
+      <label class="if-label">What are you building?<span class="if-req">*</span></label>
+      <input class="if-input" type="text" placeholder="e.g. finance-ops approval agent in LangGraph" required />
+
+      <button class="btn btn-primary" type="submit">Request invite →</button>
+      <div class="if-hint">Reviewed by a person, not a waitlist bot.</div>
+    </form>
+  </div>
+</div>
+
+<section class="docs-band" id="docs">
+  <div class="wrap docs-inner">
+    <div class="docs-text">
+      <h2>Read the <em>API reference.</em></h2>
+      <p>Generated straight from the SDK's own docstrings — <code>@hg.hitl_node</code>, <code>hg.raise_interrupt</code>, and every content/response schema.</p>
+    </div>
+    <a class="btn-docs" href="#">docs.hgateway.theved.ai →</a>
+  </div>
+</section>
+
+<section class="final-cta wrap reveal">
+  <h2>Stop hand-rolling <em>human-in-the-loop.</em></h2>
+  <p>Try the sandbox first — no signup, no API calls, just the two experiences side by side.</p>
+  <div class="hero-ctas">
+    <a class="btn btn-primary" href="hitl-sandbox.html">Try the sandbox →</a>
+    <a class="btn btn-ghost" href="#">Sign in to the dashboard</a>
+  </div>
+</section>
+
+<footer>theved.ai — HGateway is a prototype product surface for design validation.</footer>
+
+<script>
+const PAINS = {
+  builder: [
+    ["Stale HITL, no reply", "How do I handle a stale HITL if Rishabh doesn't respond in time?"],
+    ["Rishabh = bottleneck", "Rishabh has become a bottleneck for every invoice approval."],
+    ["Can't re-route on the fly", "I can't re-route this HITL to another responder on the fly."],
+    ["No reasoning captured", "How do I capture the reasoning behind Rishabh's decision?"],
+    ["Reply overwrites, no diff", "A free-text reply overwrites the draft — no diff, no history."],
+    ["No routing rationale", "No record of why a ticket was routed a certain way."]
+  ],
+  responder: [
+    ["No context to decide", "How can I approve/reject this without any context?"],
+    ["Sneha should see this", "I think Sneha has better context here — how do I route this to her?"],
+    ["Fear of breaking things", "What if I approve this and something breaks?"],
+    ["Which team owns this?", "Which team actually owns this — billing or technical?"],
+    ["Did my reply even parse?", "Did my reply even get parsed correctly?"],
+    ["Responding without awareness", "I need to interact with this HITL to respond with complete awareness — not just guess from a one-line message."]
+  ]
+};
+
+function buildChips(containerId, items){
+  const el = document.getElementById(containerId);
+  el.innerHTML = items.map((pair, i) => `
+    <button class="pain-chip" data-idx="${i}" style="animation-delay:${i * 60}ms">
+      <span class="ic">✕</span>${pair[0]}
+    </button>`).join('');
+}
+
+function wireChips(containerId, detailId, items){
+  const container = document.getElementById(containerId);
+  const detail = document.getElementById(detailId);
+  container.addEventListener('click', (e) => {
+    const chip = e.target.closest('.pain-chip');
+    if(!chip) return;
+    const idx = Number(chip.dataset.idx);
+    const wasActive = chip.classList.contains('active');
+    container.querySelectorAll('.pain-chip.active').forEach(c => c.classList.remove('active'));
+    if(wasActive){
+      detail.classList.remove('show');
+      detail.innerHTML = '';
+      return;
+    }
+    chip.classList.add('active');
+    detail.innerHTML = `<span class="detail-arrow"></span>${items[idx][1]}`;
+    detail.classList.add('show');
+  });
+}
+
+buildChips('chipsBuilder', PAINS.builder);
+buildChips('chipsResponder', PAINS.responder);
+wireChips('chipsBuilder', 'detailBuilder', PAINS.builder);
+wireChips('chipsResponder', 'detailResponder', PAINS.responder);
+
+// pop-in animation for chips once problem section is visible, plus generic scroll-reveal
+const revealTargets = document.querySelectorAll('.reveal');
+const io = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if(entry.isIntersecting){
+      entry.target.classList.add('in');
+      if(entry.target.id === 'problem'){
+        document.querySelectorAll('#chipsBuilder .pain-chip, #chipsResponder .pain-chip').forEach(c => c.classList.add('pop'));
+      }
+      io.unobserve(entry.target);
+    }
+  });
+}, {threshold:0.15});
+revealTargets.forEach(t => io.observe(t));
+
+// invite modal
+const inviteBackdrop = document.getElementById('inviteBackdrop');
+
+function openInviteModal(){
+  inviteBackdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeInviteModal(){
+  inviteBackdrop.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+document.querySelectorAll('.invite-trigger').forEach(el => {
+  el.addEventListener('click', (e) => {
+    e.preventDefault();
+    openInviteModal();
+  });
+});
+document.getElementById('inviteClose').addEventListener('click', closeInviteModal);
+inviteBackdrop.addEventListener('click', (e) => {
+  if(e.target === inviteBackdrop) closeInviteModal();
+});
+document.addEventListener('keydown', (e) => {
+  if(e.key === 'Escape' && inviteBackdrop.classList.contains('open')) closeInviteModal();
+});
+
+function wireOtherReveal(selectId, otherId){
+  const select = document.getElementById(selectId);
+  const other = document.getElementById(otherId);
+  select.addEventListener('change', () => {
+    if(select.value === 'other'){
+      other.classList.add('show');
+      other.required = true;
+      other.focus();
+    } else {
+      other.classList.remove('show');
+      other.required = false;
+      other.value = '';
+    }
+  });
+}
+wireOtherReveal('adkSelect', 'adkOther');
+wireOtherReveal('channelSelect', 'channelOther');
+</script>
+
+</body>
+</html>

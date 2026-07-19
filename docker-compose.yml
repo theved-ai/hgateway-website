@@ -1,0 +1,35 @@
+# Deploy shape for the VPS (OVH) production deployment. Next.js standalone server, reached
+# internally by Caddy (a separate compose project, code/caddy/) over theved-net — no host
+# port published. Build args come from envs/plain/.env.prod (kept local, never committed —
+# see envs/enc/.env.prod.enc); run with
+# `docker compose --env-file envs/plain/.env.prod -f docker-compose.yml build`.
+#
+# Caps the service's json-file log driver to 3x10MB (30MB max) so logs can't silently fill the
+# disk over time — `docker compose logs` still works exactly the same, just with bounded history.
+x-logging: &default-logging
+  driver: json-file
+  options:
+    max-size: "10m"
+    max-file: "3"
+
+services:
+  hgateway-website:
+    # image: lets `docker compose pull` fetch the CI-built image on the VPS instead of
+    # rebuilding locally — NEXT_PUBLIC_* vars are already baked into this image at CI
+    # build time, nothing further needed at runtime. build: still works for local dev.
+    image: ${HGATEWAY_WEBSITE_IMAGE:-ghcr.io/theved-ai/hgateway-website:latest}
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_DOCS_URL: ${NEXT_PUBLIC_DOCS_URL}
+        NEXT_PUBLIC_DASHBOARD_URL: ${NEXT_PUBLIC_DASHBOARD_URL}
+        NEXT_PUBLIC_DASHBOARD_API_URL: ${NEXT_PUBLIC_DASHBOARD_API_URL}
+    networks:
+      - theved-net
+    restart: unless-stopped
+    logging: *default-logging
+
+networks:
+  theved-net:
+    external: true

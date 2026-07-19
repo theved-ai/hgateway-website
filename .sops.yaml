@@ -1,0 +1,3 @@
+creation_rules:
+  - path_regex: envs/plain/\.env\.prod$
+    age: age1qsrxu0urjxg9uqz5wz8x7kl749t27khm70d5upve677fhgcghdyq3j2l35
