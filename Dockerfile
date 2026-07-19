@@ -23,5 +23,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends curl && rm -rf 
 COPY --from=build /app/public ./public
 COPY --from=build /app/.next/standalone ./
 COPY --from=build /app/.next/static ./.next/static
+# The standalone server binds to $HOSTNAME, which Docker sets to the container ID by
+# default — without this override it never listens on localhost/0.0.0.0, so curl-based
+# healthchecks (including the release workflow's) can never reach it.
+ENV HOSTNAME=0.0.0.0
 EXPOSE 3000
 CMD ["node", "server.js"]
