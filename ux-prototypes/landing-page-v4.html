@@ -381,21 +381,32 @@
   .arch-panel.coupled .arch-caption b{color:var(--red);}
   .arch-panel.decoupled .arch-caption b{color:var(--green-br);}
 
-  /* ================= cost list ================= */
-  .cost-section{padding:20px 0 96px 0;}
-  .cost-list{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-  @media (max-width:760px){ .cost-list{grid-template-columns:1fr;} }
-  .cost-item{
+  /* ================= problems with today's process ================= */
+  .problems{padding:90px 0 100px 0;}
+  .problems-intro{
+    font-family:'Fraunces',serif;font-style:italic;font-size:14.5px;color:var(--muted2);
+    max-width:640px;margin:0 0 8px 0;
+  }
+  .problem-list{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:34px;}
+  @media (max-width:760px){ .problem-list{grid-template-columns:1fr;} }
+  .problem-item{
     display:flex;gap:14px;align-items:flex-start;background:var(--card);
     border:1px solid var(--border-soft);border-radius:14px;padding:18px 20px;
+    position:relative;overflow:hidden;
   }
-  .cost-item .ci-ic{
+  .problem-item::before{
+    content:'';position:absolute;inset:0;
+    background-image:repeating-linear-gradient(135deg, rgba(168,64,42,.035) 0 12px, transparent 12px 24px);
+    pointer-events:none;
+  }
+  .problem-item > *{position:relative;z-index:1;}
+  .problem-item .pi-ic{
     flex-shrink:0;width:28px;height:28px;border-radius:50%;background:var(--red-tint);
     border:1.5px solid var(--red-border);color:var(--red);font-weight:700;font-size:13px;
     display:flex;align-items:center;justify-content:center;
   }
-  .cost-item h4{font-size:13.5px;margin:0 0 4px 0;font-weight:700;}
-  .cost-item p{font-size:12.5px;color:var(--muted2);line-height:1.55;margin:0;}
+  .problem-item h4{font-size:13.5px;margin:0 0 4px 0;font-weight:700;}
+  .problem-item p{font-size:12.5px;color:var(--muted2);line-height:1.55;margin:0;}
 
   /* ================= the shift / analogy ================= */
   .reveal-product{padding:20px 0 96px 0;}
@@ -601,7 +612,7 @@
 
 <section class="hero">
   <div class="hero-inner">
-    <div class="hero-kicker"><span class="dot"></span> HRRM for Agents</div>
+    <div class="hero-kicker"><span class="dot"></span> ARM for Agents</div>
     <h1 class="serif">Ved makes your agent <span class="rq-arrow">↔</span> human<br>interaction, <em>Agentic.</em></h1>
     <p class="lede">Ved is an HGateway (HITL gateway) agent — it owns and resolves every HITL your agents raise. Register the interrupt, hand it to Ved, and your agent goes back to doing the one thing it's actually coded for: <b>its business logic</b>, not babysitting a raised HITL through to resolution.</p>
 
@@ -617,18 +628,34 @@
         <div class="lc-step owned"><div class="lc-connector"></div><div class="lc-num">1</div><div class="lc-label">Raised</div><div class="lc-sub">the agent flags: "refund is $10k, over my limit"</div></div>
         <div class="lc-step owned"><div class="lc-connector"></div><div class="lc-num">2</div><div class="lc-label">Delivered</div><div class="lc-sub">the finance approver on call gets it, with context</div></div>
         <div class="lc-step owned"><div class="lc-connector"></div><div class="lc-num">3</div><div class="lc-label">Interaction</div><div class="lc-sub">approver asks for the refund history before deciding</div></div>
-        <div class="lc-step owned"><div class="lc-connector"></div><div class="lc-num">4</div><div class="lc-label">Resolved</div><div class="lc-sub">approved — with the reasoning attached</div></div>
+        <div class="lc-step owned"><div class="lc-connector"></div><div class="lc-num">4</div><div class="lc-label">Resolved</div><div class="lc-sub">approver signs off — refund approved</div></div>
         <div class="lc-step owned"><div class="lc-num">5</div><div class="lc-label">Resumed</div><div class="lc-sub">agent processes the refund, decision in hand</div></div>
       </div>
       <div class="lifecycle-branch-row">
         <div class="lifecycle-branch-connector"></div>
         <div class="lifecycle-branch">
           <div class="lb-num">6</div>
-          <div class="lb-text"><b>Post-Resolution</b> — runs in parallel, independent of the main flow: the reasoning behind the decision feeds Ved's reasoning-capture stack, sharpening every future HITL.</div>
+          <div class="lb-text"><b>Post-Resolution</b> — runs in parallel, independent of the main flow: the responder shares the reasoning behind its response, feeding Ved's reasoning-capture stack and sharpening every future HITL.</div>
         </div>
       </div>
       <div class="lifecycle-owner"><span class="led on"></span> Ved owns this lifecycle end to end — <b>your agent just resumes with its resolution.</b></div>
     </div>
+  </div>
+</section>
+
+<section class="problems wrap reveal">
+  <div class="sec-head">
+    <div class="sec-kicker">The problem today</div>
+    <h2>Every HITL runs into <em>the same six walls.</em></h2>
+    <p class="problems-intro">None of this shows up in a demo. It shows up the first time a real one goes wrong.</p>
+  </div>
+  <div class="problem-list">
+    <div class="problem-item"><span class="pi-ic">✕</span><div><h4>No interactive UX</h4><p>The responder isn't given anything to work with — just a prompt and two buttons. They guess, or pick whatever feels most right, never sure it's actually right.</p></div></div>
+    <div class="problem-item"><span class="pi-ic">✕</span><div><h4>No staleness handling</h4><p>Nobody's watching what happens if the responder doesn't answer. The HITL just waits — indefinitely, if it has to.</p></div></div>
+    <div class="problem-item"><span class="pi-ic">✕</span><div><h4>No on-the-fly re-routing</h4><p>Wrong person got the ask? Re-routing to someone else means a code change and a deployment, not a click.</p></div></div>
+    <div class="problem-item"><span class="pi-ic">✕</span><div><h4>No reasoning capture</h4><p>Even when a human explains why they decided something, there's nowhere for that reasoning to live. It's gone once the thread goes quiet.</p></div></div>
+    <div class="problem-item"><span class="pi-ic">✕</span><div><h4>No learning from history</h4><p>Every HITL is treated like the first time it's ever happened. Nothing gets quieter or smarter over time — it's just noise, every time.</p></div></div>
+    <div class="problem-item"><span class="pi-ic">✕</span><div><h4>No governance controls</h4><p>You can't apply a rule to a specific HITL type, or to a whole team of agents. There's no lever to pull, only code to ship.</p></div></div>
   </div>
 </section>
 
@@ -689,26 +716,11 @@
   </div>
 </section>
 
-<section class="cost-section wrap reveal">
-  <div class="sec-head">
-    <div class="sec-kicker">What welding it in costs you</div>
-    <h2>Not a bug. <em>A ceiling.</em></h2>
-    <p>None of this shows up in a demo. It shows up the first time you try to change, audit, or trust how your agents hand off to people.</p>
-  </div>
-  <div class="cost-list">
-    <div class="cost-item"><span class="ci-ic">✕</span><div><h4>It can't be governed</h4><p>There's no single place to see how, or how well, every agent's human hand-off actually behaves.</p></div></div>
-    <div class="cost-item"><span class="ci-ic">✕</span><div><h4>It can't change without a redeploy</h4><p>Who gets asked, and how, is compiled into the agent — evolving it means shipping code, not flipping a setting.</p></div></div>
-    <div class="cost-item"><span class="ci-ic">✕</span><div><h4>It can't learn</h4><p>Every past human decision is a one-off message, not a record — there's no substrate for the gate to get smarter over time.</p></div></div>
-    <div class="cost-item"><span class="ci-ic">✕</span><div><h4>It can't be proactive</h4><p>Nobody nudges a quiet responder, checks back in, or escalates a decision that's stuck — the interrupt fires once, then the agent just waits.</p></div></div>
-    <div class="cost-item" style="grid-column:1 / -1;"><span class="ci-ic">✕</span><div><h4>It leaves the responder guessing</h4><p>No impact analysis, no recommendation, no reasoning from similar decisions before — just a one-line prompt and a clock. The responder decides half-blind, every time.</p></div></div>
-  </div>
-</section>
-
 <section class="reveal-product wrap reveal">
   <div class="reveal-product-card">
     <div class="sec-kicker" style="color:var(--green-br);">This is the shift</div>
     <h2 class="serif">Pull the gate out of the agent.<br><em>Give Ved the lifecycle.</em></h2>
-    <p class="reveal-quote">A CRM is infrastructure for company <span class="rq-arrow">↔</span> customer interaction.<br>HGateway is an <b>HRRM — a Human Responder Relationship Manager — for agent <span class="rq-arrow">↔</span> human interaction</b> — and Ved is the agent that runs it.</p>
+    <p class="reveal-quote">A CRM is infrastructure for company <span class="rq-arrow">↔</span> customer interaction.<br>HGateway is an <b>ARM — an Agent Relationship Manager — for agent <span class="rq-arrow">↔</span> human interaction</b> — and Ved is the agent that runs it.</p>
     <p class="reveal-lede">This is the shift being sold: the entire HITL lifecycle, handed to an agent built to own it — which is what makes everything that follows possible in the first place.</p>
     <p class="reveal-close">One decorator. One typed call. The gate moves out of your repo — and into Ved.</p>
   </div>
@@ -727,12 +739,12 @@
       <span class="unlock-becomes">Becomes possible</span>
       <div class="unlock-stage">Delivered → Interaction</div>
       <h3>Continuity, not staleness</h3>
-      <p>A HITL that sits in deliberation too long doesn't just go quiet — Ved holds it, tracks it, and keeps it moving, so business operations never stall on a thread nobody's watching.</p>
+      <p>A HITL that's just been delivered doesn't go stale sitting with no interaction on it — Ved moves it forward proactively, so business operations never stall on a thread nobody's watching.</p>
     </div>
     <div class="unlock-card">
       <span class="unlock-becomes">Becomes possible</span>
       <div class="unlock-stage">Interaction → Resolved</div>
-      <h3>Interactive deliberation, not a guess</h3>
+      <h3>Interactive engagement, not a guess</h3>
       <p>The responder can ask for impact analysis, request a recommendation, forward it to a peer, or interrogate the HITL directly — every exchange feeding a reasoning stack that makes the next HITL sharper than the last.</p>
     </div>
     <div class="unlock-card">
@@ -860,7 +872,6 @@ graph.add_node(<span class="tok-str">"review"</span>, review_node)</pre>
   </div>
 </section>
 
-<footer>theved.ai — HGateway is a prototype product surface for design validation (v4 synthesis draft).</footer>
 
 <script>
 const revealTargets = document.querySelectorAll('.reveal');

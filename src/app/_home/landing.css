@@ -797,21 +797,30 @@ html {
   color: var(--green-br);
 }
 
-/* ================= cost list ================= */
-.landing-page .cost-section {
-  padding: 20px 0 96px 0;
+/* ================= problems with today's process ================= */
+.landing-page .problems {
+  padding: 90px 0 100px 0;
 }
-.landing-page .cost-list {
+.landing-page .problems-intro {
+  font-family: var(--font-fraunces), serif;
+  font-style: italic;
+  font-size: 14.5px;
+  color: var(--muted2);
+  max-width: 640px;
+  margin: 0 0 8px 0;
+}
+.landing-page .problem-list {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 16px;
+  margin-top: 34px;
 }
 @media (max-width: 760px) {
-  .landing-page .cost-list {
+  .landing-page .problem-list {
     grid-template-columns: 1fr;
   }
 }
-.landing-page .cost-item {
+.landing-page .problem-item {
   display: flex;
   gap: 14px;
   align-items: flex-start;
@@ -819,8 +828,21 @@ html {
   border: 1px solid var(--border-soft);
   border-radius: 14px;
   padding: 18px 20px;
+  position: relative;
+  overflow: hidden;
 }
-.landing-page .cost-item .ci-ic {
+.landing-page .problem-item::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: repeating-linear-gradient(135deg, rgba(168, 64, 42, 0.035) 0 12px, transparent 12px 24px);
+  pointer-events: none;
+}
+.landing-page .problem-item > * {
+  position: relative;
+  z-index: 1;
+}
+.landing-page .problem-item .pi-ic {
   flex-shrink: 0;
   width: 28px;
   height: 28px;
@@ -834,12 +856,12 @@ html {
   align-items: center;
   justify-content: center;
 }
-.landing-page .cost-item h4 {
+.landing-page .problem-item h4 {
   font-size: 13.5px;
   margin: 0 0 4px 0;
   font-weight: 700;
 }
-.landing-page .cost-item p {
+.landing-page .problem-item p {
   font-size: 12.5px;
   color: var(--muted2);
   line-height: 1.55;

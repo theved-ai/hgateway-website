@@ -60,7 +60,7 @@ export default function LandingPage() {
       <section className="hero">
         <div className="hero-inner">
           <div className="hero-kicker">
-            <span className="dot" /> HRRM for Agents
+            <span className="dot" /> ARM for Agents
           </div>
           <h1 className="serif">
             Ved makes your agent <span className="rq-arrow">↔</span> human
@@ -116,7 +116,7 @@ export default function LandingPage() {
                 <div className="lc-connector" />
                 <div className="lc-num">4</div>
                 <div className="lc-label">Resolved</div>
-                <div className="lc-sub">approved — with the reasoning attached</div>
+                <div className="lc-sub">approver signs off — refund approved</div>
               </div>
               <div className="lc-step owned">
                 <div className="lc-num">5</div>
@@ -129,14 +129,84 @@ export default function LandingPage() {
               <div className="lifecycle-branch">
                 <div className="lb-num">6</div>
                 <div className="lb-text">
-                  <b>Post-Resolution</b> — runs in parallel, independent of the main flow: the reasoning behind the
-                  decision feeds Ved&apos;s reasoning-capture stack, sharpening every future HITL.
+                  <b>Post-Resolution</b> — runs in parallel, independent of the main flow: the responder shares the
+                  reasoning behind its response, feeding Ved&apos;s reasoning-capture stack and sharpening every
+                  future HITL.
                 </div>
               </div>
             </div>
             <div className="lifecycle-owner">
               <span className="led on" /> Ved owns this lifecycle end to end —{" "}
               <b>your agent just resumes with its resolution.</b>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section ref={register("problems")} className={`problems wrap reveal${isIn("problems") ? " in" : ""}`}>
+        <div className="sec-head">
+          <div className="sec-kicker">The problem today</div>
+          <h2>
+            Every HITL runs into <em>the same six walls.</em>
+          </h2>
+          <p className="problems-intro">None of this shows up in a demo. It shows up the first time a real one goes wrong.</p>
+        </div>
+        <div className="problem-list">
+          <div className="problem-item">
+            <span className="pi-ic">✕</span>
+            <div>
+              <h4>No interactive UX</h4>
+              <p>
+                The responder isn&apos;t given anything to work with — just a prompt and two buttons. They guess, or
+                pick whatever feels most right, never sure it&apos;s actually right.
+              </p>
+            </div>
+          </div>
+          <div className="problem-item">
+            <span className="pi-ic">✕</span>
+            <div>
+              <h4>No staleness handling</h4>
+              <p>
+                Nobody&apos;s watching what happens if the responder doesn&apos;t answer. The HITL just waits —
+                indefinitely, if it has to.
+              </p>
+            </div>
+          </div>
+          <div className="problem-item">
+            <span className="pi-ic">✕</span>
+            <div>
+              <h4>No on-the-fly re-routing</h4>
+              <p>Wrong person got the ask? Re-routing to someone else means a code change and a deployment, not a click.</p>
+            </div>
+          </div>
+          <div className="problem-item">
+            <span className="pi-ic">✕</span>
+            <div>
+              <h4>No reasoning capture</h4>
+              <p>
+                Even when a human explains why they decided something, there&apos;s nowhere for that reasoning to
+                live. It&apos;s gone once the thread goes quiet.
+              </p>
+            </div>
+          </div>
+          <div className="problem-item">
+            <span className="pi-ic">✕</span>
+            <div>
+              <h4>No learning from history</h4>
+              <p>
+                Every HITL is treated like the first time it&apos;s ever happened. Nothing gets quieter or smarter
+                over time — it&apos;s just noise, every time.
+              </p>
+            </div>
+          </div>
+          <div className="problem-item">
+            <span className="pi-ic">✕</span>
+            <div>
+              <h4>No governance controls</h4>
+              <p>
+                You can&apos;t apply a rule to a specific HITL type, or to a whole team of agents. There&apos;s no
+                lever to pull, only code to ship.
+              </p>
             </div>
           </div>
         </div>
@@ -274,68 +344,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section ref={register("cost")} className={`cost-section wrap reveal${isIn("cost") ? " in" : ""}`}>
-        <div className="sec-head">
-          <div className="sec-kicker">What welding it in costs you</div>
-          <h2>
-            Not a bug. <em>A ceiling.</em>
-          </h2>
-          <p>
-            None of this shows up in a demo. It shows up the first time you try to change, audit, or trust how your
-            agents hand off to people.
-          </p>
-        </div>
-        <div className="cost-list">
-          <div className="cost-item">
-            <span className="ci-ic">✕</span>
-            <div>
-              <h4>It can&apos;t be governed</h4>
-              <p>There&apos;s no single place to see how, or how well, every agent&apos;s human hand-off actually behaves.</p>
-            </div>
-          </div>
-          <div className="cost-item">
-            <span className="ci-ic">✕</span>
-            <div>
-              <h4>It can&apos;t change without a redeploy</h4>
-              <p>
-                Who gets asked, and how, is compiled into the agent — evolving it means shipping code, not flipping
-                a setting.
-              </p>
-            </div>
-          </div>
-          <div className="cost-item">
-            <span className="ci-ic">✕</span>
-            <div>
-              <h4>It can&apos;t learn</h4>
-              <p>
-                Every past human decision is a one-off message, not a record — there&apos;s no substrate for the
-                gate to get smarter over time.
-              </p>
-            </div>
-          </div>
-          <div className="cost-item">
-            <span className="ci-ic">✕</span>
-            <div>
-              <h4>It can&apos;t be proactive</h4>
-              <p>
-                Nobody nudges a quiet responder, checks back in, or escalates a decision that&apos;s stuck — the
-                interrupt fires once, then the agent just waits.
-              </p>
-            </div>
-          </div>
-          <div className="cost-item" style={{ gridColumn: "1 / -1" }}>
-            <span className="ci-ic">✕</span>
-            <div>
-              <h4>It leaves the responder guessing</h4>
-              <p>
-                No impact analysis, no recommendation, no reasoning from similar decisions before — just a one-line
-                prompt and a clock. The responder decides half-blind, every time.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
-
       <section
         ref={register("revealProduct")}
         className={`reveal-product wrap reveal${isIn("revealProduct") ? " in" : ""}`}
@@ -352,7 +360,7 @@ export default function LandingPage() {
           <p className="reveal-quote">
             A CRM is infrastructure for company <span className="rq-arrow">↔</span> customer interaction.
             <br />
-            HGateway is an <b>HRRM — a Human Responder Relationship Manager — for agent{" "}
+            HGateway is an <b>ARM — an Agent Relationship Manager — for agent{" "}
             <span className="rq-arrow">↔</span> human interaction</b> — and Ved is the agent that runs it.
           </p>
           <p className="reveal-lede">
@@ -386,14 +394,14 @@ export default function LandingPage() {
             <div className="unlock-stage">Delivered → Interaction</div>
             <h3>Continuity, not staleness</h3>
             <p>
-              A HITL that sits in deliberation too long doesn&apos;t just go quiet — Ved holds it, tracks it, and
-              keeps it moving, so business operations never stall on a thread nobody&apos;s watching.
+              A HITL that&apos;s just been delivered doesn&apos;t go stale sitting with no interaction on it — Ved
+              moves it forward proactively, so business operations never stall on a thread nobody&apos;s watching.
             </p>
           </div>
           <div className="unlock-card">
             <span className="unlock-becomes">Becomes possible</span>
             <div className="unlock-stage">Interaction → Resolved</div>
-            <h3>Interactive deliberation, not a guess</h3>
+            <h3>Interactive engagement, not a guess</h3>
             <p>
               The responder can ask for impact analysis, request a recommendation, forward it to a peer, or
               interrogate the HITL directly — every exchange feeding a reasoning stack that makes the next HITL
@@ -497,7 +505,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer>theved.ai — HGateway is a prototype product surface for design validation (v4 synthesis draft).</footer>
     </div>
   );
 }
