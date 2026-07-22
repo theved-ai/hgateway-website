@@ -41,7 +41,7 @@ html {
   color: var(--text);
   font-family: var(--font-ibm-plex-sans), system-ui, sans-serif;
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .landing-page * {
