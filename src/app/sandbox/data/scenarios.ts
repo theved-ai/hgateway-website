@@ -1,21 +1,62 @@
-// Data for the HITL sandbox, ported verbatim from ux-prototypes/hitl-sandbox.html.
-// Code and Slack embeds are stored as pre-formatted HTML strings (rendered via
-// dangerouslySetInnerHTML) because the prototype's syntax-highlighted code and
-// Slack-message markup is itself the content, not something to re-derive.
+// Data for the Acme "going agentic" HITL sandbox, ported from
+// ux-prototypes/acme-hitl-flow.html. Code snippets are stored as pre-formatted
+// HTML strings (rendered via dangerouslySetInnerHTML) because the prototype's
+// syntax-highlighted code is itself the content, not something to re-derive.
 
 export type CaseMode = "existing" | "hgateway";
 export type Persona = "builder" | "responder";
+export type CaseType = "approval" | "decision" | "context" | "edit";
+
+/** Drives which action UI both the Legacy and Ved cards render for a scenario. */
+export type InteractionKind =
+  | { kind: "binary"; approveLabel: string; rejectLabel: string }
+  | { kind: "options"; options: { label: string; desc: string }[] }
+  | { kind: "form"; fieldLabel: string; placeholder: string; submitLabel: string }
+  | { kind: "edit"; draftText: string; primaryLabel: string; secondaryLabel: string };
+
+export interface ForwardTarget {
+  id: string;
+  name: string;
+  role: string;
+  why: string;
+}
+
+export interface ImpactGroup {
+  heading: string;
+  items: { text: string; bad: boolean }[];
+}
 
 export interface Scenario {
   avatar: string;
   title: string;
   desc: string;
   code: Record<CaseMode, string>;
-  slack: Record<CaseMode, string>;
   pains: Record<CaseMode, Record<Persona, [string, string][]>>;
-}
 
-export type CaseType = "approval" | "decision" | "context" | "edit";
+  // Slack message chrome
+  agentName: string;
+  time: string;
+  runId: string;
+  typeLabel: string;
+  tagValue: string;
+  titleRowText: string;
+  dotColorVar: string;
+  contextWhy: string;
+  autoForwardChannel: string;
+  interaction: InteractionKind;
+  promptText: string;
+
+  // Confidence / narrative interaction data
+  scenarioLine: string;
+  impactGroups: ImpactGroup[];
+  recommend: string;
+  confidence: "low" | "medium" | "high";
+  forwardTo: ForwardTarget[];
+  qnaAnswer: string;
+  irreversible: string[];
+  recommendedChoice: string;
+  reasoningDraft: (choice: string) => string;
+}
 
 const IMPORTS = {
   existing: `<span class="tok-kw">from</span> langgraph.graph <span class="tok-kw">import</span> StateGraph
@@ -26,8 +67,6 @@ const IMPORTS = {
 <span class="tok-kw">import</span> hgateway_sdk <span class="tok-kw">as</span> hg
 `,
 };
-
-const LOGO_SRC = "/sandbox/theved-logo.png";
 
 export const SCENARIOS: Record<CaseType, Scenario> = {
   approval: {
@@ -74,45 +113,6 @@ workflow.add_node("finance_approval_node", finance_approval_node)
 
     return {"status": resp["decision"]}`,
     },
-    slack: {
-      existing: `
-        <div class="slack-msg">
-          <div class="s-avatar">💰</div>
-          <div class="s-body">
-            <div class="s-head"><span class="s-name">finance-ops-agent</span><span class="s-time">9:41 AM</span></div>
-            <div class="s-prompt">Approve payment of $12,400.00 to Acme Supplies?</div>
-            <div class="s-actions">
-              <div class="s-btn primary">✓ Approve</div>
-              <div class="s-btn danger">✕ Reject</div>
-            </div>
-          </div>
-        </div>`,
-      hgateway: `
-        <div class="slack-msg">
-          <div class="s-avatar"><img src="${LOGO_SRC}" alt="Ved" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"></div>
-          <div class="s-body">
-            <div class="s-head"><span class="s-name">Ved</span><span class="s-bot-tag">APP</span><span class="s-time">9:41 AM</span></div>
-            <div class="s-title-row"><span class="s-dot" style="background:var(--sk-green)"></span><span class="s-title">Approval needed · finance-ops-agent</span></div>
-            <div class="s-meta">From: <b>finance-ops-agent</b> · run <b>run-fin-1</b> · For: <b>@Rishabh</b> · Type: Approval</div>
-            <div class="s-context-block">💭 <span><b>CONTEXT</b> &nbsp;<b>Why:</b> The agent matched the invoice to PO #A-2291 and flagged the $12,400 amount as above the $10k auto-approval threshold; sign-off is required before payment is released.</span></div>
-            <hr class="s-divider">
-            <div class="s-tagline"># HITL CONTENT · <span class="s-tag">VED.HITL(APPROVAL)</span></div>
-            <div class="s-prompt">Approve payment of $12,400.00 to Acme Supplies?</div>
-            <div class="s-actions">
-              <div class="s-btn primary">✓ Approve</div>
-              <div class="s-btn danger">✕ Reject</div>
-            </div>
-            <hr class="s-divider">
-            <div class="s-footer-actions">
-              <div class="s-footer-btn">🔍 Explain impact</div>
-              <div class="s-footer-btn">💡 Recommend</div>
-              <div class="s-footer-btn">↪ Forward</div>
-            </div>
-            <div class="s-autoforward">⏳ Auto-forwards to <span class="s-mention">#finance-ops</span> in 1h if no response</div>
-            <div class="s-thread"><div class="s-thread-avatar"></div><b>1 reply</b> Today at 9:52 AM</div>
-          </div>
-        </div>`,
-    },
     pains: {
       existing: {
         builder: [
@@ -129,8 +129,8 @@ workflow.add_node("finance_approval_node", finance_approval_node)
       },
       hgateway: {
         builder: [
-          ["Never goes stale", "Ved holds this instead of Rishabh — it doesn't just sit there if he's slow to respond."],
-          ["Rishabh isn't a dead end", "Ved keeps this moving even if Rishabh's unavailable — it's not stuck on one person."],
+          ["Auto-forwards on timeout", "TTL + auto-forward to #finance-ops handles stale HITLs automatically."],
+          ["No single point of failure", "Rishabh isn't a single point of failure — it escalates if he's unavailable."],
           ["Forward to Sneha, no code", "Forward re-routes to Sneha on the fly, no graph changes needed."],
           ["Reasoning logged automatically", "Every decision is captured with reasoning in the audit trail."],
         ],
@@ -141,6 +141,53 @@ workflow.add_node("finance_approval_node", finance_approval_node)
         ],
       },
     },
+    agentName: "finance-ops-agent",
+    time: "9:41 AM",
+    runId: "run-fin-1",
+    typeLabel: "Approval",
+    promptText: "Approve payment of $12,400.00 to Acme Supplies?",
+    tagValue: "VED.HITL(APPROVAL)",
+    titleRowText: "Approval needed · finance-ops-agent",
+    dotColorVar: "var(--sk-green)",
+    contextWhy:
+      "The agent matched the invoice to PO #A-2291 and flagged the $12,400 amount as above the $10k auto-approval threshold; sign-off is required before payment is released.",
+    autoForwardChannel: "#finance-ops",
+    interaction: { kind: "binary", approveLabel: "✓ Approve", rejectLabel: "✕ Reject" },
+
+    scenarioLine:
+      "Scenario — it's 9:41 AM. finance-ops-agent flags a $12,400 invoice above the $10k auto-approval line and needs Rishabh to sign off before it pays Acme Supplies.",
+    impactGroups: [
+      {
+        heading: "✅ Approve",
+        items: [
+          { text: "Payment releases immediately to Acme Supplies", bad: false },
+          { text: "Irreversible once issued — recovery needs a manual clawback", bad: true },
+          { text: "Closes 3 more line items queued behind PO #A-2291", bad: false },
+        ],
+      },
+      {
+        heading: "❌ Reject",
+        items: [
+          { text: "No money moves", bad: false },
+          { text: "Invoice re-enters the AP reconciliation queue, adding ~2 days", bad: true },
+          { text: "Acme Supplies loses its early-payment discount window", bad: true },
+        ],
+      },
+    ],
+    recommend: "Approve. The amount matches PO #A-2291 exactly and the vendor has a clean 18-month payment history.",
+    confidence: "high",
+    forwardTo: [
+      { id: "sneha", name: "Sneha", role: "AP Lead", why: "Owns vendor payment exceptions" },
+      { id: "financeops", name: "#finance-ops", role: "Team channel", why: "Shared pool — first available approver picks it up" },
+    ],
+    qnaAnswer:
+      "The $10k threshold is a standing finance-ops policy, not agent-specific — anything above it always needs sign-off, regardless of vendor history.",
+    irreversible: ["✓ Approve"],
+    recommendedChoice: "✓ Approve",
+    reasoningDraft: (choice) =>
+      choice.includes("Approve")
+        ? "I approved because the $12,400 amount matches PO #A-2291 exactly, Acme Supplies has an 18-month clean payment history, and holding it would cost their early-payment discount window."
+        : "I rejected because I couldn't confirm the PO match with enough confidence to release funds — escalating to AP reconciliation for manual verification first.",
   },
 
   decision: {
@@ -192,43 +239,6 @@ workflow.add_node("ticket_routing_node", ticket_routing_node)
 
     return {"routed_team": resp["selected"]}`,
     },
-    slack: {
-      existing: `
-        <div class="slack-msg">
-          <div class="s-avatar">🎧</div>
-          <div class="s-body">
-            <div class="s-head"><span class="s-name">support-triage-agent</span><span class="s-time">11:02 AM</span></div>
-            <div class="s-prompt">Route ticket #9931: "Refund not reflecting after cancellation"</div>
-            <div class="s-option-row"><div class="s-option-text"><div class="t">Billing</div><div class="d">Invoicing, refunds &amp; payment disputes</div></div><div class="s-btn">Billing</div></div>
-            <div class="s-option-row"><div class="s-option-text"><div class="t">Technical</div><div class="d">Bugs, outages &amp; product defects</div></div><div class="s-btn">Technical</div></div>
-            <div class="s-option-row"><div class="s-option-text"><div class="t">Legal</div><div class="d">Compliance, contracts &amp; disputes</div></div><div class="s-btn">Legal</div></div>
-          </div>
-        </div>`,
-      hgateway: `
-        <div class="slack-msg">
-          <div class="s-avatar"><img src="${LOGO_SRC}" alt="Ved" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"></div>
-          <div class="s-body">
-            <div class="s-head"><span class="s-name">Ved</span><span class="s-bot-tag">APP</span><span class="s-time">11:02 AM</span></div>
-            <div class="s-title-row"><span class="s-dot" style="background:var(--sk-blue)"></span><span class="s-title">Decision needed · support-triage-agent</span></div>
-            <div class="s-meta">From: <b>support-triage-agent</b> · run <b>run-sup-2</b> · For: <b>@Rishabh</b> · Type: Decision</div>
-            <div class="s-context-block">💭 <span><b>CONTEXT</b> &nbsp;<b>Why:</b> The agent classified this as a billing-adjacent technical issue but confidence is split between Billing and Technical ownership; routing needs a human call.</span></div>
-            <hr class="s-divider">
-            <div class="s-tagline"># HITL CONTENT · <span class="s-tag">VED.HITL(DECISION)</span></div>
-            <div class="s-prompt">Route ticket #9931: "Refund not reflecting after cancellation"</div>
-            <div class="s-option-row"><div class="s-option-text"><div class="t">Billing</div><div class="d">Invoicing, refunds &amp; payment disputes</div></div><div class="s-btn">Billing</div></div>
-            <div class="s-option-row"><div class="s-option-text"><div class="t">Technical</div><div class="d">Bugs, outages &amp; product defects</div></div><div class="s-btn">Technical</div></div>
-            <div class="s-option-row"><div class="s-option-text"><div class="t">Legal</div><div class="d">Compliance, contracts &amp; disputes</div></div><div class="s-btn">Legal</div></div>
-            <hr class="s-divider">
-            <div class="s-footer-actions">
-              <div class="s-footer-btn">🔍 Explain impact</div>
-              <div class="s-footer-btn">💡 Recommend</div>
-              <div class="s-footer-btn">↪ Forward</div>
-            </div>
-            <div class="s-autoforward">⏳ Auto-forwards to <span class="s-mention">#support-escalations</span> in 1h if no response</div>
-            <div class="s-thread"><div class="s-thread-avatar"></div><b>1 reply</b> Today at 11:14 AM</div>
-          </div>
-        </div>`,
-    },
     pains: {
       existing: {
         builder: [
@@ -245,7 +255,7 @@ workflow.add_node("ticket_routing_node", ticket_routing_node)
       },
       hgateway: {
         builder: [
-          ["Never sits unrouted", "Ved owns this ticket until it's routed — it doesn't drift because Rishabh missed a reply."],
+          ["Auto-forward prevents drift", "TTL + auto-forward to #support-escalations prevents unrouted tickets."],
           ["Structured options, no typos", "Structured options mean routing can never silently misfire."],
           ["Forward to Sneha instantly", "Forward re-routes to Sneha without touching the graph."],
           ["Routing + reasoning logged", "Routing decision + reasoning is logged automatically."],
@@ -253,10 +263,61 @@ workflow.add_node("ticket_routing_node", ticket_routing_node)
         responder: [
           ["Each option explains itself", "Each option shows why it might apply — no guessing."],
           ["One-click forward to Sneha", "Forward to Sneha in one click if she's the better owner."],
-          ["Nothing gets dropped", "Ved keeps this alive even if I don't act right away — nothing falls through."],
+          ["Auto-forwards after 2h", "Auto-forwards after 2h if I don't act — nothing's dropped."],
         ],
       },
     },
+    agentName: "support-triage-agent",
+    time: "11:02 AM",
+    runId: "run-sup-2",
+    typeLabel: "Decision",
+    promptText: 'Route ticket #9931: "Refund not reflecting after cancellation"',
+    tagValue: "VED.HITL(DECISION)",
+    titleRowText: "Decision needed · support-triage-agent",
+    dotColorVar: "var(--sk-blue)",
+    contextWhy:
+      "The agent classified this as a billing-adjacent technical issue but confidence is split between Billing and Technical ownership; routing needs a human call.",
+    autoForwardChannel: "#support-escalations",
+    interaction: {
+      kind: "options",
+      options: [
+        { label: "Billing", desc: "Invoicing, refunds & payment disputes" },
+        { label: "Technical", desc: "Bugs, outages & product defects" },
+        { label: "Legal", desc: "Compliance, contracts & disputes" },
+      ],
+    },
+
+    scenarioLine:
+      "Scenario — it's 11:02 AM. support-triage-agent can't confidently classify ticket #9931 as Billing or Technical, and a wrong route means the customer sees it bounce twice.",
+    impactGroups: [
+      {
+        heading: "Route to Technical",
+        items: [
+          { text: "Traces to a webhook-sync bug seen twice this week", bad: false },
+          { text: "6-ticket backlog, ~4h SLA", bad: true },
+        ],
+      },
+      {
+        heading: "Route to Billing",
+        items: [
+          { text: "Skips the technical backlog", bad: false },
+          { text: "Billing can't action a refund without a root-cause note", bad: true },
+          { text: "Likely bounces back for a second re-route", bad: true },
+        ],
+      },
+    ],
+    recommend: "Route to Technical first — the refund symptom traces back to a webhook-sync bug seen twice this week.",
+    confidence: "medium",
+    forwardTo: [
+      { id: "sneha", name: "Sneha", role: "Support Ops", why: "Owns escalation routing calls" },
+      { id: "supportesc", name: "#support-escalations", role: "Team channel", why: "Shared pool — first available specialist picks it up" },
+    ],
+    qnaAnswer:
+      "Confidence is split 55/45 Technical vs. Billing — the agent flagged it instead of guessing because a wrong route costs a second escalation.",
+    irreversible: [],
+    recommendedChoice: "Technical",
+    reasoningDraft: (choice) =>
+      `I routed to ${choice} because it best matches the recurring webhook-sync issue seen this week, and a wrong route here means the customer sees the ticket bounce a second time.`,
   },
 
   context: {
@@ -307,45 +368,6 @@ workflow.add_node("contract_context_node", contract_context_node)
 
     return resp`,
     },
-    slack: {
-      existing: `
-        <div class="slack-msg">
-          <div class="s-avatar">📄</div>
-          <div class="s-body">
-            <div class="s-head"><span class="s-name">deal-desk-agent</span><span class="s-time">2:14 PM</span></div>
-            <div class="s-prompt">Missing details to finish Nimbus Retail's contract.</div>
-            <div class="s-field-label">Billing address &amp; payment terms</div>
-            <div class="s-textbox"><span class="s-input-ph">e.g. 123 Main St, Springfield — Net 30 terms</span></div>
-            <div class="s-hint">↵ Press 'enter' to submit</div>
-            <div class="s-actions"><div class="s-btn primary">Provide input</div></div>
-          </div>
-        </div>`,
-      hgateway: `
-        <div class="slack-msg">
-          <div class="s-avatar"><img src="${LOGO_SRC}" alt="Ved" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"></div>
-          <div class="s-body">
-            <div class="s-head"><span class="s-name">Ved</span><span class="s-bot-tag">APP</span><span class="s-time">2:14 PM</span></div>
-            <div class="s-title-row"><span class="s-dot" style="background:var(--sk-purple)"></span><span class="s-title">Context needed · deal-desk-agent</span></div>
-            <div class="s-meta">From: <b>deal-desk-agent</b> · run <b>run-deal-4</b> · For: <b>@Rishabh</b> · Type: Context</div>
-            <div class="s-context-block">💭 <span><b>CONTEXT</b> &nbsp;<b>Why:</b> The agent has every deal term except billing address and payment terms, which aren't present in the CRM record and can't be safely inferred.</span></div>
-            <hr class="s-divider">
-            <div class="s-tagline"># HITL CONTENT · <span class="s-tag">VED.HITL(CONTEXT)</span></div>
-            <div class="s-prompt">Missing details to finish Nimbus Retail's contract.</div>
-            <div class="s-field-label">Billing address &amp; payment terms</div>
-            <div class="s-textbox"><span class="s-input-ph">e.g. 123 Main St, Springfield — Net 30 terms</span></div>
-            <div class="s-hint">↵ Press 'enter' to submit</div>
-            <div class="s-actions"><div class="s-btn primary">Provide input</div></div>
-            <hr class="s-divider">
-            <div class="s-footer-actions">
-              <div class="s-footer-btn">🔍 Explain impact</div>
-              <div class="s-footer-btn">💡 Recommend</div>
-              <div class="s-footer-btn">↪ Forward</div>
-            </div>
-            <div class="s-autoforward">⏳ Auto-forwards to <span class="s-mention">#sales-ops</span> in 1h if no response</div>
-            <div class="s-thread"><div class="s-thread-avatar"></div><b>1 reply</b> Today at 2:26 PM</div>
-          </div>
-        </div>`,
-    },
     pains: {
       existing: {
         builder: [
@@ -362,7 +384,7 @@ workflow.add_node("contract_context_node", contract_context_node)
       },
       hgateway: {
         builder: [
-          ["Deals don't stall", "Ved keeps this moving instead of letting it stall on one person's inbox."],
+          ["Auto-forward keeps deals moving", "TTL + auto-forward to #sales-ops keeps deals from stalling."],
           ["Validated fields, no corruption", "Structured fields are validated on submit — no corrupted data."],
           ["Forward to Sneha in one click", "Forward to Sneha in one click if she owns the account."],
           ["Every field logged with source", "Every submitted field is logged with who supplied it."],
@@ -374,6 +396,48 @@ workflow.add_node("contract_context_node", contract_context_node)
         ],
       },
     },
+    agentName: "deal-desk-agent",
+    time: "2:14 PM",
+    runId: "run-deal-4",
+    typeLabel: "Context",
+    promptText: "Missing details to finish Nimbus Retail's contract.",
+    tagValue: "VED.HITL(CONTEXT)",
+    titleRowText: "Context needed · deal-desk-agent",
+    dotColorVar: "var(--sk-purple)",
+    contextWhy:
+      "The agent has every deal term except billing address and payment terms, which aren't present in the CRM record and can't be safely inferred.",
+    autoForwardChannel: "#sales-ops",
+    interaction: {
+      kind: "form",
+      fieldLabel: "Billing address & payment terms",
+      placeholder: "e.g. 123 Main St, Springfield — Net 30 terms",
+      submitLabel: "Provide input",
+    },
+
+    scenarioLine:
+      "Scenario — it's 2:14 PM. deal-desk-agent is drafting Nimbus Retail's renewal contract but the billing address and payment terms were never logged in the CRM.",
+    impactGroups: [
+      {
+        heading: "Where this goes",
+        items: [
+          { text: "Used directly in the contract sent for countersignature", bad: false },
+          { text: "Wrong value needs a contract amendment later, not just an edit", bad: true },
+          { text: "Nimbus Retail's renewal window closes in 4 days", bad: true },
+        ],
+      },
+    ],
+    recommend: "Use Nimbus Retail's last known billing address on file and default to Net-30 — their standard renewal term.",
+    confidence: "medium",
+    forwardTo: [
+      { id: "sneha", name: "Sneha", role: "Account Owner", why: "Owns the Nimbus Retail relationship" },
+      { id: "salesops", name: "#sales-ops", role: "Team channel", why: "Shared pool — first available rep picks it up" },
+    ],
+    qnaAnswer:
+      "The CRM record for Nimbus Retail was never fully filled in during onboarding — this is a data gap, not something the agent misread.",
+    irreversible: [],
+    recommendedChoice: "Provide input",
+    reasoningDraft: () =>
+      "I provided Net-30 and the address on file because Nimbus Retail has used the same terms on their last two renewals, and no new figure was logged this cycle.",
   },
 
   edit: {
@@ -418,45 +482,6 @@ workflow.add_node("social_copy_node", social_copy_node)
 
     return {"final_copy": resp["edited_content"]}`,
     },
-    slack: {
-      existing: `
-        <div class="slack-msg">
-          <div class="s-avatar">📣</div>
-          <div class="s-body">
-            <div class="s-head"><span class="s-name">marketing-copy-agent</span><span class="s-time">4:30 PM</span></div>
-            <div class="s-prompt">Review the draft post before it goes out.</div>
-            <div class="s-field-label">Agent's draft (editable)</div>
-            <div class="s-textbox">We are shipping Nimbus 2.0 today — faster sync, smarter search, same price.</div>
-            <div class="s-hint">↵ Press 'enter' to submit</div>
-            <div class="s-actions"><div class="s-btn primary">Send</div><div class="s-btn">Send without edits</div></div>
-          </div>
-        </div>`,
-      hgateway: `
-        <div class="slack-msg">
-          <div class="s-avatar"><img src="${LOGO_SRC}" alt="Ved" style="width:100%;height:100%;object-fit:cover;border-radius:8px;"></div>
-          <div class="s-body">
-            <div class="s-head"><span class="s-name">Ved</span><span class="s-bot-tag">APP</span><span class="s-time">4:30 PM</span></div>
-            <div class="s-title-row"><span class="s-dot" style="background:var(--sk-orange)"></span><span class="s-title">Review needed · marketing-copy-agent</span></div>
-            <div class="s-meta">From: <b>marketing-copy-agent</b> · run <b>run-mkt-3</b> · For: <b>@Rishabh</b> · Type: Edit</div>
-            <div class="s-context-block">💭 <span><b>CONTEXT</b> &nbsp;<b>Why:</b> The agent drafted the launch announcement but is unsure the tone matches brand style guide and whether pricing language needs legal sign-off before it's public.</span></div>
-            <hr class="s-divider">
-            <div class="s-tagline"># HITL CONTENT · <span class="s-tag">VED.HITL(EDIT)</span></div>
-            <div class="s-prompt">Review the draft post before it goes out.</div>
-            <div class="s-field-label">Agent's draft (editable)</div>
-            <div class="s-textbox">We are shipping Nimbus 2.0 today — faster sync, smarter search, same price.</div>
-            <div class="s-hint">↵ Press 'enter' to submit</div>
-            <div class="s-actions"><div class="s-btn primary">Send</div><div class="s-btn">Send without edits</div></div>
-            <hr class="s-divider">
-            <div class="s-footer-actions">
-              <div class="s-footer-btn">🔍 Explain impact</div>
-              <div class="s-footer-btn">💡 Recommend</div>
-              <div class="s-footer-btn">↪ Forward</div>
-            </div>
-            <div class="s-autoforward">⏳ Auto-forwards to <span class="s-mention">#marketing</span> in 1h if no response</div>
-            <div class="s-thread"><div class="s-thread-avatar"></div><b>1 reply</b> Today at 4:41 PM</div>
-          </div>
-        </div>`,
-    },
     pains: {
       existing: {
         builder: [
@@ -473,7 +498,7 @@ workflow.add_node("social_copy_node", social_copy_node)
       },
       hgateway: {
         builder: [
-          ["Doesn't wait on one person", "Ved keeps this moving if Rishabh's unavailable — the post isn't stuck waiting."],
+          ["Auto-forward if unavailable", "TTL + auto-forward to #marketing if Rishabh's unavailable."],
           ["Edits captured as a diff", "Edits are captured as a diff against the original draft."],
           ["Forward to Sneha, 2nd pass", "Forward to Sneha in one click for a second pass."],
           ["Full edit history logged", "Full history of every edit and who made it."],
@@ -485,7 +510,58 @@ workflow.add_node("social_copy_node", social_copy_node)
         ],
       },
     },
+    agentName: "marketing-copy-agent",
+    time: "4:30 PM",
+    runId: "run-mkt-3",
+    typeLabel: "Edit",
+    promptText: "Review the draft post before it goes out.",
+    tagValue: "VED.HITL(EDIT)",
+    titleRowText: "Review needed · marketing-copy-agent",
+    dotColorVar: "var(--sk-orange)",
+    contextWhy:
+      "The agent drafted the launch announcement but is unsure the tone matches brand style guide and whether pricing language needs legal sign-off before it's public.",
+    autoForwardChannel: "#marketing",
+    interaction: {
+      kind: "edit",
+      draftText: "We are shipping Nimbus 2.0 today — faster sync, smarter search, same price.",
+      primaryLabel: "Send",
+      secondaryLabel: "Send without edits",
+    },
+
+    scenarioLine:
+      "Scenario — it's 4:30 PM. marketing-copy-agent drafted the Nimbus 2.0 launch post, but the pricing line ('same price') usually wants a Legal look before three channels go live.",
+    impactGroups: [
+      {
+        heading: "On send",
+        items: [
+          { text: "Goes out across 3 coordinated launch channels immediately", bad: false },
+          { text: "Pricing line ('same price') usually wants a Legal look first", bad: true },
+          { text: "Delay here delays all 3 channels together", bad: true },
+        ],
+      },
+    ],
+    recommend: "Send after a quick Legal pass on the pricing line — the rest of the copy matches brand voice guidelines.",
+    confidence: "high",
+    forwardTo: [
+      { id: "sneha", name: "Sneha", role: "Brand/Legal liaison", why: "Signs off on pricing-adjacent copy" },
+      { id: "marketing", name: "#marketing", role: "Team channel", why: "Shared pool — first available reviewer picks it up" },
+    ],
+    qnaAnswer:
+      "The draft was flagged mainly for the pricing sentence — 'same price' can read as a claim Legal usually wants phrased more carefully.",
+    irreversible: ["Send"],
+    recommendedChoice: "Send",
+    reasoningDraft: () =>
+      "I sent the draft as-is — the copy matches brand voice and the pricing line is accurate; flagging for Legal felt like caution, not a blocker.",
   },
+};
+
+export const JOURNEY_ORDER: CaseType[] = ["approval", "decision", "context", "edit"];
+
+export const JOURNEY_NAMES: Record<CaseType, string> = {
+  approval: "Finance Ops Agent",
+  decision: "Support Triage Agent",
+  context: "Deal Desk Agent",
+  edit: "Marketing Copy Agent",
 };
 
 export const CASE_TABS: { type: CaseType; icon: string; label: string }[] = [
@@ -494,3 +570,7 @@ export const CASE_TABS: { type: CaseType; icon: string; label: string }[] = [
   { type: "context", icon: "📄", label: "Context" },
   { type: "edit", icon: "📣", label: "Review / Edit" },
 ];
+
+export const YOU_NAME = "Rishabh";
+export const ALREADY_RESOLVED_REPLY =
+  "This request has already been resolved 👍 The decision and reasoning are recorded above in this thread. I can no longer take any questions on this one.";

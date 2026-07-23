@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import type { CaseMode, Persona } from "./data";
+import type { CaseMode, Persona } from "./data/scenarios";
 
 interface PainChipsProps {
   mode: CaseMode;
   builder: [string, string][];
   responder: [string, string][];
+  responderLabel?: string;
 }
 
 function ChipRow({
@@ -46,7 +47,7 @@ function ChipRow({
   );
 }
 
-export default function PainChips({ mode, builder, responder }: PainChipsProps) {
+export default function PainChips({ mode, builder, responder, responderLabel = "Rishabh" }: PainChipsProps) {
   const [activePersona, setActivePersona] = useState<Persona | null>(null);
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
@@ -83,7 +84,8 @@ export default function PainChips({ mode, builder, responder }: PainChipsProps) 
       </div>
       <div className="pain-block">
         <div className="pain-block-title">
-          <span className="persona-avatar">R</span> Rishabh <span className="role">responder</span>
+          <span className="persona-avatar">R</span> {responderLabel}{" "}
+          <span className="role">{responderLabel === "Rishabh" ? "responder" : "responders"}</span>
         </div>
         <ChipRow
           mode={mode}

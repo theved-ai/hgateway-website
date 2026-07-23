@@ -85,6 +85,9 @@ export default function LandingPage() {
             <a className="btn btn-ghost" href="#axiom">
               See the argument ↓
             </a>
+            <a className="btn btn-ghost" href="/sandbox">
+              Try the sandbox ↗
+            </a>
           </div>
 
           <div className="lifecycle-block">
